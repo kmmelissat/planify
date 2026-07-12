@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarView } from "@/components/plan/calendar-view";
 import { KanbanView } from "@/components/plan/kanban-view";
 import { TableView } from "@/components/plan/table-view";
+import { PageHeader } from "@/components/layout/page-header";
 
 export default function PlanPage() {
   const { currentPlan, isGenerating, fetchCurrentPlan, generateNewPlan, setApprovalStatus } =
@@ -29,27 +30,26 @@ export default function PlanPage() {
   }, [fetchCurrentPlan]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="text-2xl font-semibold">Plan propuesto</h1>
-          <p className="text-sm text-muted-foreground">
-            El agente propone; tú decides. Nada queda final sin tu aprobación.
-          </p>
-        </div>
-        <Button
-          onClick={() => generateNewPlan()}
-          disabled={isGenerating}
-          className="gap-2"
-        >
-          <RefreshCw className={isGenerating ? "size-4 animate-spin" : "size-4"} />
-          {currentPlan ? "Pedir nueva versión" : "Generar plan"}
-        </Button>
-      </div>
+    <div className="flex flex-col gap-10">
+      <PageHeader
+        eyebrow="Propuesta"
+        title="Plan propuesto"
+        description="El agente propone; tú decides. Nada queda final sin tu aprobación."
+        actions={
+          <Button
+            onClick={() => generateNewPlan()}
+            disabled={isGenerating}
+            className="gap-2"
+          >
+            <RefreshCw className={isGenerating ? "size-4 animate-spin" : "size-4"} />
+            {currentPlan ? "Pedir nueva versión" : "Generar plan"}
+          </Button>
+        }
+      />
 
       {!currentPlan && !isGenerating && (
         <Card>
-          <CardContent className="py-10 text-center text-sm text-muted-foreground">
+          <CardContent className="py-14 text-center text-sm text-muted-foreground">
             Todavía no hay un plan generado. Usa el botón &quot;Generar
             plan&quot; para pedirle una propuesta al agente.
           </CardContent>
@@ -58,18 +58,20 @@ export default function PlanPage() {
 
       {currentPlan && (
         <>
-          <Card>
-            <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+          <Card className="py-6">
+            <CardHeader className="flex flex-col gap-3 px-6 sm:flex-row sm:items-start sm:justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2.5 text-xl font-semibold">
                   Versión {currentPlan.version}
                   <Badge variant="outline" className="capitalize">
                     {currentPlan.approvalStatus}
                   </Badge>
                 </CardTitle>
-                <CardDescription>{currentPlan.overallJustification}</CardDescription>
+                <CardDescription className="mt-1.5 max-w-2xl leading-relaxed">
+                  {currentPlan.overallJustification}
+                </CardDescription>
               </div>
-              <div className="flex gap-2">
+              <div className="flex shrink-0 gap-2">
                 <Button
                   size="sm"
                   variant="outline"
@@ -88,7 +90,7 @@ export default function PlanPage() {
               </div>
             </CardHeader>
             {currentPlan.conflicts.length > 0 && (
-              <CardContent className="flex flex-col gap-2">
+              <CardContent className="flex flex-col gap-2.5 px-6">
                 {currentPlan.conflicts.map((conflict) => (
                   <Alert
                     key={conflict.id}
@@ -118,14 +120,14 @@ export default function PlanPage() {
               <TabsTrigger value="kanban">Kanban</TabsTrigger>
               <TabsTrigger value="tabla">Lista priorizada</TabsTrigger>
             </TabsList>
-            <TabsContent value="calendario" className="mt-4">
+            <TabsContent value="calendario" className="mt-5">
               <CalendarView items={currentPlan.items} />
             </TabsContent>
-            <TabsContent value="kanban" className="mt-4">
+            <TabsContent value="kanban" className="mt-5">
               <KanbanView items={currentPlan.items} />
             </TabsContent>
-            <TabsContent value="tabla" className="mt-4">
-              <Card>
+            <TabsContent value="tabla" className="mt-5">
+              <Card className="py-0">
                 <CardContent className="p-0">
                   <TableView items={currentPlan.items} />
                 </CardContent>

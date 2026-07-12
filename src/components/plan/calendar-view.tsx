@@ -13,20 +13,20 @@ const weekOrder: { day: Weekday; label: string }[] = [
 
 export function CalendarView({ items }: { items: PlanItem[] }) {
   return (
-    <div className="grid grid-cols-1 gap-3 md:grid-cols-7">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-7">
       {weekOrder.map(({ day, label }) => {
         const dayItems = items
           .filter((item) => item.day === day)
           .sort((a, b) => a.startTime.localeCompare(b.startTime));
 
         return (
-          <div key={day} className="flex flex-col gap-2">
-            <h3 className="text-sm font-semibold text-muted-foreground">
-              {label}
-            </h3>
-            <div className="flex flex-col gap-2">
+          <div key={day} className="flex flex-col gap-3">
+            <h3 className="text-eyebrow">{label}</h3>
+            <div className="flex flex-col gap-2.5">
               {dayItems.length === 0 && (
-                <p className="text-xs text-muted-foreground">Sin bloques</p>
+                <p className="text-xs text-muted-foreground/70 italic">
+                  Sin bloques
+                </p>
               )}
               {dayItems.map((item) => (
                 <PlanItemCard key={item.id} item={item} />

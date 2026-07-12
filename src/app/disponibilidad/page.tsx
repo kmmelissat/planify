@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { PageHeader } from "@/components/layout/page-header";
 
 const dayLabels: Record<string, string> = {
   lunes: "Lunes",
@@ -29,21 +30,21 @@ export default function DisponibilidadPage() {
   }, [fetchAll]);
 
   return (
-    <div className="flex flex-col gap-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Disponibilidad</h1>
-        <p className="text-sm text-muted-foreground">
-          Bloques de tiempo libres y restricciones que el agente debe respetar
-          al proponer un plan.
-        </p>
-      </div>
+    <div className="flex flex-col gap-10">
+      <PageHeader
+        eyebrow="Contexto"
+        title="Disponibilidad"
+        description="Bloques de tiempo libres y restricciones que el agente debe respetar al proponer un plan."
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Bloques de disponibilidad</CardTitle>
+      <Card className="py-6">
+        <CardHeader className="px-6">
+          <CardTitle className="text-xl font-semibold">
+            Bloques de disponibilidad
+          </CardTitle>
           <CardDescription>Tiempo libre declarado por día.</CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2">
+        <CardContent className="flex flex-col gap-2.5 px-6">
           {isLoading && (
             <p className="text-sm text-muted-foreground">Cargando...</p>
           )}
@@ -55,7 +56,7 @@ export default function DisponibilidadPage() {
           {blocks.map((block) => (
             <div
               key={block.id}
-              className="flex items-center justify-between rounded-md border px-3 py-2"
+              className="flex items-center justify-between rounded-lg border border-border px-4 py-3"
             >
               <div className="flex items-center gap-3">
                 <Badge variant="outline">{dayLabels[block.day]}</Badge>
@@ -73,14 +74,16 @@ export default function DisponibilidadPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Restricciones</CardTitle>
+      <Card className="py-6">
+        <CardHeader className="px-6">
+          <CardTitle className="text-xl font-semibold">
+            Restricciones
+          </CardTitle>
           <CardDescription>
             Horarios ocupados, tareas fijas y límites de sesión.
           </CardDescription>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2">
+        <CardContent className="flex flex-col gap-2.5 px-6">
           {!isLoading && constraints.length === 0 && (
             <p className="text-sm text-muted-foreground">
               No hay restricciones registradas.
@@ -89,9 +92,9 @@ export default function DisponibilidadPage() {
           {constraints.map((constraint) => (
             <div
               key={constraint.id}
-              className="flex flex-col gap-1 rounded-md border px-3 py-2"
+              className="flex flex-col gap-1.5 rounded-lg border border-border px-4 py-3"
             >
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <Badge variant="secondary" className="capitalize">
                   {constraint.type.replace(/_/g, " ")}
                 </Badge>
@@ -108,7 +111,9 @@ export default function DisponibilidadPage() {
                   </span>
                 )}
               </div>
-              <p className="text-sm">{constraint.description}</p>
+              <p className="text-sm text-foreground/90">
+                {constraint.description}
+              </p>
             </div>
           ))}
         </CardContent>

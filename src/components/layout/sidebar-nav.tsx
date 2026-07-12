@@ -4,8 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { navItems } from "@/components/layout/nav-items";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
-export function SidebarNav() {
+export function SidebarNav({ isCollapsed }: { isCollapsed: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -15,32 +20,47 @@ export function SidebarNav() {
           item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
         const Icon = item.icon;
 
-        return (
+        const linkContent = (
           <Link
-            key={item.href}
             href={item.href}
+            aria-label={item.label}
             className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors",
+              "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm outline-none transition-colors",
+              "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
+              isCollapsed && "justify-center px-2",
               isActive
                 ? "bg-primary text-primary-foreground font-medium"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                : "text-muted-foreground hover:bg-sidebar-accent hover:text-foreground",
             )}
           >
             <Icon className="size-4 shrink-0" />
-            <span className="flex flex-col leading-tight">
-              <span>{item.label}</span>
-              <span
-                className={cn(
-                  "text-xs",
-                  isActive
-                    ? "text-primary-foreground/80"
-                    : "text-muted-foreground/80",
-                )}
-              >
-                {item.description}
+            {!isCollapsed && (
+              <span className="flex flex-col leading-tight">
+                <span>{item.label}</span>
+                <span
+                  className={cn(
+                    "text-xs",
+                    isActive
+                      ? "text-primary-foreground/80"
+                      : "text-muted-foreground/80",
+                  )}
+                >
+                  {item.description}
+                </span>
               </span>
-            </span>
+            )}
           </Link>
+        );
+
+        if (!isCollapsed) {
+          return <div key={item.href}>{linkContent}</div>;
+        }
+
+        return (
+          <Tooltip key={item.href}>
+            <TooltipTrigger render={linkContent} />
+            <TooltipContent side="right">{item.label}</TooltipContent>
+          </Tooltip>
         );
       })}
     </nav>

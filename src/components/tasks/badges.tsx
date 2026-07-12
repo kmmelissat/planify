@@ -2,13 +2,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { TaskPriority, TaskStatus } from "@/lib/types";
 
-const priorityStyles: Record<TaskPriority, string> = {
-  urgente: "bg-red-600 text-white hover:bg-red-600",
-  alta: "bg-orange-500 text-white hover:bg-orange-500",
-  media: "bg-amber-400 text-black hover:bg-amber-400",
-  baja: "bg-slate-300 text-slate-900 hover:bg-slate-300",
-};
-
 const priorityLabels: Record<TaskPriority, string> = {
   urgente: "Urgente",
   alta: "Alta",
@@ -16,20 +9,44 @@ const priorityLabels: Record<TaskPriority, string> = {
   baja: "Baja",
 };
 
+const priorityDotClass: Record<TaskPriority, string> = {
+  urgente: "bg-priority-urgente",
+  alta: "bg-priority-alta",
+  media: "bg-priority-media",
+  baja: "bg-priority-baja",
+};
+
+/** Marca de prioridad de firma: punto de color + etiqueta, sin píldora sólida. */
 export function PriorityBadge({ priority }: { priority: TaskPriority }) {
   return (
-    <Badge className={cn(priorityStyles[priority])}>
+    <span className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground">
+      <span
+        className={cn("size-1.75 shrink-0 rounded-full", priorityDotClass[priority])}
+        aria-hidden
+      />
       {priorityLabels[priority]}
-    </Badge>
+    </span>
   );
 }
 
+/** Clase de borde izquierdo para usar en cards/filas: refuerza la prioridad sin repetir el punto. */
+const priorityBorderClass: Record<TaskPriority, string> = {
+  urgente: "border-l-priority-urgente",
+  alta: "border-l-priority-alta",
+  media: "border-l-priority-media",
+  baja: "border-l-priority-baja",
+};
+
+export function priorityAccentClass(priority: TaskPriority): string {
+  return cn("border-l-[3px]", priorityBorderClass[priority]);
+}
+
 const statusStyles: Record<TaskStatus, string> = {
-  pendiente: "bg-slate-200 text-slate-900 hover:bg-slate-200",
-  en_progreso: "bg-blue-500 text-white hover:bg-blue-500",
-  completada: "bg-emerald-600 text-white hover:bg-emerald-600",
-  atrasada: "bg-red-600 text-white hover:bg-red-600",
-  reprogramada: "bg-purple-500 text-white hover:bg-purple-500",
+  pendiente: "bg-status-pendiente/15 text-status-pendiente",
+  en_progreso: "bg-status-progreso/12 text-status-progreso",
+  completada: "bg-status-completada/12 text-status-completada",
+  atrasada: "bg-status-atrasada/12 text-status-atrasada",
+  reprogramada: "bg-status-reprogramada/12 text-status-reprogramada",
 };
 
 const statusLabels: Record<TaskStatus, string> = {
@@ -42,7 +59,10 @@ const statusLabels: Record<TaskStatus, string> = {
 
 export function StatusBadge({ status }: { status: TaskStatus }) {
   return (
-    <Badge variant="outline" className={cn(statusStyles[status], "border-0")}>
+    <Badge
+      variant="outline"
+      className={cn(statusStyles[status], "border-0 font-medium")}
+    >
       {statusLabels[status]}
     </Badge>
   );
