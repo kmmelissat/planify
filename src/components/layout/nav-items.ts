@@ -2,7 +2,6 @@ import {
   CalendarClock,
   History,
   LayoutDashboard,
-  ListTodo,
   Sparkles,
   type LucideIcon,
 } from "lucide-react";
@@ -22,22 +21,16 @@ export const navItems: NavItem[] = [
     icon: LayoutDashboard,
   },
   {
-    href: "/tareas",
-    label: "Tareas",
-    description: "Gestión de tareas",
-    icon: ListTodo,
+    href: "/plan",
+    label: "Tareas y Plan",
+    description: "Gestión de tareas y propuesta del agente",
+    icon: Sparkles,
   },
   {
     href: "/disponibilidad",
     label: "Disponibilidad",
     description: "Bloques y restricciones",
     icon: CalendarClock,
-  },
-  {
-    href: "/plan",
-    label: "Plan",
-    description: "Propuesta del agente",
-    icon: Sparkles,
   },
   {
     href: "/historial",

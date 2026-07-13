@@ -86,7 +86,7 @@ export function TaskStatusBars({ tasks }: { tasks: Task[] }) {
           <CardMenu
             items={[
               { label: "Actualizar", onSelect: () => fetchTasks() },
-              { label: "Ver tareas", onSelect: () => router.push("/tareas") },
+              { label: "Ver tareas", onSelect: () => router.push("/plan") },
             ]}
           />
         </CardAction>

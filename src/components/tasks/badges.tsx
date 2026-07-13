@@ -1,8 +1,16 @@
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import type { TaskPriority, TaskStatus } from "@/lib/types";
+import type { TaskCategory, TaskPriority, TaskStatus } from "@/lib/types";
 
-const priorityLabels: Record<TaskPriority, string> = {
+export const categoryLabels: Record<TaskCategory, string> = {
+  academico: "Académico",
+  personal: "Personal",
+  trabajo: "Trabajo",
+  salud: "Salud",
+  otro: "Otro",
+};
+
+export const priorityLabels: Record<TaskPriority, string> = {
   urgente: "Urgente",
   alta: "Alta",
   media: "Media",
@@ -49,7 +57,7 @@ const statusStyles: Record<TaskStatus, string> = {
   reprogramada: "bg-status-reprogramada/12 text-status-reprogramada",
 };
 
-const statusLabels: Record<TaskStatus, string> = {
+export const statusLabels: Record<TaskStatus, string> = {
   pendiente: "Pendiente",
   en_progreso: "En progreso",
   completada: "Completada",
