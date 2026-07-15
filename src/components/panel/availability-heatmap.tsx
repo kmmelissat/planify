@@ -138,7 +138,7 @@ export function AvailabilityHeatmap({
               { label: "Actualizar", onSelect: () => fetchAll() },
               {
                 label: "Ver disponibilidad",
-                onSelect: () => router.push("/disponibilidad"),
+                onSelect: () => router.push("/app/disponibilidad"),
               },
             ]}
           />

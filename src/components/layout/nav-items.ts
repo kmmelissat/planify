@@ -15,25 +15,25 @@ export interface NavItem {
 
 export const navItems: NavItem[] = [
   {
-    href: "/",
+    href: "/app",
     label: "Panel",
     description: "Seguimiento general",
     icon: LayoutDashboard,
   },
   {
-    href: "/plan",
+    href: "/app/plan",
     label: "Tareas y Plan",
     description: "Gestión de tareas y propuesta del agente",
     icon: Sparkles,
   },
   {
-    href: "/disponibilidad",
+    href: "/app/disponibilidad",
     label: "Disponibilidad",
     description: "Bloques y restricciones",
     icon: CalendarClock,
   },
   {
-    href: "/historial",
+    href: "/app/historial",
     label: "Historial",
     description: "Trazabilidad humano-IA",
     icon: History,

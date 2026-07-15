@@ -17,7 +17,9 @@ export function SidebarNav({ isCollapsed }: { isCollapsed: boolean }) {
     <nav className="flex flex-col gap-1 p-3">
       {navItems.map((item) => {
         const isActive =
-          item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          item.href === "/app"
+            ? pathname === "/app"
+            : pathname.startsWith(item.href);
         const Icon = item.icon;
 
         const linkContent = (

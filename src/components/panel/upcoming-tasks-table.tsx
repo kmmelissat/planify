@@ -65,7 +65,7 @@ export function UpcomingTasksTable({
         </CardTitle>
         <CardAction>
           <Link
-            href="/plan"
+            href="/app/plan"
             className="text-sm font-medium text-primary hover:underline"
           >
             Ver todas
@@ -137,7 +137,7 @@ export function UpcomingTasksTable({
                         Marcar como completada
                       </DropdownMenuItem>
                       <DropdownMenuItem
-                        render={<Link href="/plan">Ver en Tareas</Link>}
+                        render={<Link href="/app/plan">Ver en Tareas</Link>}
                       />
                     </DropdownMenuContent>
                   </DropdownMenu>

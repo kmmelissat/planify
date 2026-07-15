@@ -12,7 +12,9 @@ export function MobileNav() {
     <nav className="flex gap-2 overflow-x-auto">
       {navItems.map((item) => {
         const isActive =
-          item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+          item.href === "/app"
+            ? pathname === "/app"
+            : pathname.startsWith(item.href);
         const Icon = item.icon;
 
         return (
