@@ -59,7 +59,7 @@ function toFormValues(task: Task): FormValues {
     title: task.title,
     description: task.description,
     category: task.category,
-    dueDate: task.dueDate.slice(0, 10),
+    dueDate: task.dueDate ? task.dueDate.slice(0, 10) : "",
     priority: task.priority,
     estimatedEffortMinutes: String(task.estimatedEffortMinutes),
     status: task.status,
@@ -73,7 +73,6 @@ function validate(values: FormValues): FormErrors {
   if (!values.title.trim()) errors.title = "El título es obligatorio.";
   if (!values.description.trim())
     errors.description = "La descripción es obligatoria.";
-  if (!values.dueDate) errors.dueDate = "La fecha límite es obligatoria.";
 
   const effort = Number(values.estimatedEffortMinutes);
   if (
@@ -122,7 +121,9 @@ export function TaskFormDialog({
         title: values.title.trim(),
         description: values.description.trim(),
         category: values.category,
-        dueDate: new Date(values.dueDate).toISOString(),
+        dueDate: values.dueDate
+          ? new Date(values.dueDate).toISOString()
+          : undefined,
         priority: values.priority,
         estimatedEffortMinutes: Number(values.estimatedEffortMinutes),
         status: values.status,
@@ -228,17 +229,13 @@ export function TaskFormDialog({
 
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label htmlFor="task-due-date">Fecha límite</Label>
+              <Label htmlFor="task-due-date">Fecha límite (opcional)</Label>
               <Input
                 id="task-due-date"
                 type="date"
                 value={values.dueDate}
                 onChange={(e) => setField("dueDate", e.target.value)}
-                aria-invalid={Boolean(errors.dueDate)}
               />
-              {errors.dueDate && (
-                <p className="text-xs text-destructive">{errors.dueDate}</p>
-              )}
             </div>
 
             <div className="flex flex-col gap-1.5">

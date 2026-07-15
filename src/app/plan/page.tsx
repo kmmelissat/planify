@@ -1,16 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  AlertTriangle,
-  Check,
-  CheckCircle2,
-  MoreHorizontal,
-  Pencil,
-  Plus,
-  RefreshCw,
-  X,
-} from "lucide-react";
+import { AlertTriangle, Check, Plus, RefreshCw, X } from "lucide-react";
 import { useTaskStore } from "@/store/use-task-store";
 import { usePlanStore } from "@/store/use-plan-store";
 import { usePlanViewStore } from "@/store/use-plan-view-store";
@@ -33,28 +24,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { CalendarView } from "@/components/plan/calendar-view";
 import { KanbanView } from "@/components/plan/kanban-view";
 import { TableView } from "@/components/plan/table-view";
 import { PageHeader } from "@/components/layout/page-header";
 import { TaskFormDialog } from "@/components/tasks/task-form-dialog";
+import { QuickAddTaskInput } from "@/components/tasks/quick-add-task-input";
+import { EditableTaskRow } from "@/components/tasks/editable-task-row";
 import {
   TaskStatusFilter,
   type TaskStatusFilterValue,
 } from "@/components/tasks/task-status-filter";
-import {
-  PriorityBadge,
-  StatusBadge,
-  categoryLabels,
-  priorityAccentClass,
-} from "@/components/tasks/badges";
-import { cn } from "@/lib/utils";
 import type { Task, TaskInput } from "@/lib/types";
 
 export default function PlanPage() {
@@ -107,6 +87,22 @@ export default function PlanPage() {
     }
   }
 
+  const completedCount = tasks.filter(
+    (task) => task.status === "completada",
+  ).length;
+
+  async function handleQuickAdd(title: string) {
+    await createTask({
+      title,
+      description: "",
+      category: "personal",
+      dueDate: undefined,
+      priority: "media",
+      estimatedEffortMinutes: 30,
+      status: "pendiente",
+    });
+  }
+
   return (
     <div className="flex flex-col gap-10">
       <PageHeader
@@ -125,6 +121,13 @@ export default function PlanPage() {
         </TabsList>
 
         <TabsContent value="tareas" className="mt-6 flex flex-col gap-5">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <QuickAddTaskInput onAdd={handleQuickAdd} />
+            <span className="shrink-0 text-sm text-muted-foreground">
+              {completedCount} de {tasks.length} completadas
+            </span>
+          </div>
+
           <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
             <TaskStatusFilter
               tasks={tasks}
@@ -162,63 +165,12 @@ export default function PlanPage() {
                     </TableRow>
                   )}
                   {filteredTasks.map((task) => (
-                    <TableRow
+                    <EditableTaskRow
                       key={task.id}
-                      className={cn(priorityAccentClass(task.priority))}
-                    >
-                      <TableCell className="py-4 pl-5.25 font-medium">
-                        {task.title}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {categoryLabels[task.category]}
-                      </TableCell>
-                      <TableCell>
-                        {new Date(task.dueDate).toLocaleDateString("es-CO")}
-                      </TableCell>
-                      <TableCell>
-                        <PriorityBadge priority={task.priority} />
-                      </TableCell>
-                      <TableCell className="text-muted-foreground">
-                        {task.estimatedEffortMinutes} min
-                      </TableCell>
-                      <TableCell>
-                        <StatusBadge status={task.status} />
-                      </TableCell>
-                      <TableCell className="pr-6 text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger
-                            render={
-                              <Button
-                                variant="ghost"
-                                size="icon-sm"
-                                aria-label="Acciones de la tarea"
-                                className="rounded-full text-muted-foreground"
-                              >
-                                <MoreHorizontal className="size-4" />
-                              </Button>
-                            }
-                          />
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem
-                              onClick={() => openEditDialog(task)}
-                            >
-                              <Pencil />
-                              Editar
-                            </DropdownMenuItem>
-                            {task.status !== "completada" && (
-                              <DropdownMenuItem
-                                onClick={() =>
-                                  updateTask(task.id, { status: "completada" })
-                                }
-                              >
-                                <CheckCircle2 />
-                                Marcar como completada
-                              </DropdownMenuItem>
-                            )}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
+                      task={task}
+                      onUpdate={updateTask}
+                      onEdit={openEditDialog}
+                    />
                   ))}
                 </TableBody>
               </Table>

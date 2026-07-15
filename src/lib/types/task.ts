@@ -19,7 +19,7 @@ export interface Task {
   title: string;
   description: string;
   category: TaskCategory;
-  dueDate: string; // ISO 8601
+  dueDate?: string; // ISO 8601
   priority: TaskPriority;
   estimatedEffortMinutes: number;
   status: TaskStatus;

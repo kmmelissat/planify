@@ -29,7 +29,7 @@ export const useTaskStore = create<TaskStoreState>((set) => ({
 
   createTask: async (input) => {
     const task = await getTaskRepository().create(input);
-    set((state) => ({ tasks: [...state.tasks, task] }));
+    set((state) => ({ tasks: [task, ...state.tasks] }));
   },
 
   updateTask: async (id, update) => {

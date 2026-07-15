@@ -48,10 +48,11 @@ export function UpcomingTasksTable({
     () =>
       tasks
         .filter((task) => task.status !== "completada")
-        .sort(
-          (a, b) =>
-            new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime(),
-        )
+        .sort((a, b) => {
+          const aTime = a.dueDate ? new Date(a.dueDate).getTime() : Infinity;
+          const bTime = b.dueDate ? new Date(b.dueDate).getTime() : Infinity;
+          return aTime - bTime;
+        })
         .slice(0, MAX_ROWS),
     [tasks],
   );
@@ -102,7 +103,11 @@ export function UpcomingTasksTable({
                   {task.title}
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {new Date(task.dueDate).toLocaleDateString("es-CO")}
+                  {task.dueDate ? (
+                    new Date(task.dueDate).toLocaleDateString("es-CO")
+                  ) : (
+                    <span className="italic">Sin fecha</span>
+                  )}
                 </TableCell>
                 <TableCell>
                   <PriorityBadge priority={task.priority} />

@@ -1,5 +1,6 @@
 import type { PlanItem } from "@/lib/types";
 import { PriorityBadge, priorityAccentClass } from "@/components/tasks/badges";
+import { dayLabels } from "@/lib/constants/weekday";
 import { cn } from "@/lib/utils";
 import {
   Table,
@@ -9,16 +10,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-
-const dayLabels: Record<string, string> = {
-  lunes: "Lunes",
-  martes: "Martes",
-  miercoles: "Miércoles",
-  jueves: "Jueves",
-  viernes: "Viernes",
-  sabado: "Sábado",
-  domingo: "Domingo",
-};
 
 const priorityWeight: Record<PlanItem["priority"], number> = {
   urgente: 4,

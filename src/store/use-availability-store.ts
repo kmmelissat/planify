@@ -17,8 +17,16 @@ interface AvailabilityStoreState {
   error: string | null;
   fetchAll: () => Promise<void>;
   createBlock: (input: AvailabilityBlockInput) => Promise<void>;
+  updateBlock: (
+    id: string,
+    update: Partial<AvailabilityBlockInput>,
+  ) => Promise<void>;
   removeBlock: (id: string) => Promise<void>;
   createConstraint: (input: ConstraintInput) => Promise<void>;
+  updateConstraint: (
+    id: string,
+    update: Partial<ConstraintInput>,
+  ) => Promise<void>;
   removeConstraint: (id: string) => Promise<void>;
 }
 
@@ -47,6 +55,13 @@ export const useAvailabilityStore = create<AvailabilityStoreState>(
       set((state) => ({ blocks: [...state.blocks, block] }));
     },
 
+    updateBlock: async (id, update) => {
+      const block = await getAvailabilityRepository().updateBlock(id, update);
+      set((state) => ({
+        blocks: state.blocks.map((b) => (b.id === id ? block : b)),
+      }));
+    },
+
     removeBlock: async (id) => {
       await getAvailabilityRepository().removeBlock(id);
       set((state) => ({
@@ -57,6 +72,15 @@ export const useAvailabilityStore = create<AvailabilityStoreState>(
     createConstraint: async (input) => {
       const constraint = await getConstraintRepository().create(input);
       set((state) => ({ constraints: [...state.constraints, constraint] }));
+    },
+
+    updateConstraint: async (id, update) => {
+      const constraint = await getConstraintRepository().update(id, update);
+      set((state) => ({
+        constraints: state.constraints.map((c) =>
+          c.id === id ? constraint : c,
+        ),
+      }));
     },
 
     removeConstraint: async (id) => {
