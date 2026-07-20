@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import type { Task, TaskInput, TaskUpdate } from "@/lib/types";
 import { getTaskRepository } from "@/lib/services";
+import { refreshPlanState } from "@/lib/services/refresh-plan";
 
 interface TaskStoreState {
   tasks: Task[];
@@ -30,6 +31,7 @@ export const useTaskStore = create<TaskStoreState>((set) => ({
   createTask: async (input) => {
     const task = await getTaskRepository().create(input);
     set((state) => ({ tasks: [task, ...state.tasks] }));
+    await refreshPlanState();
   },
 
   updateTask: async (id, update) => {
@@ -37,10 +39,12 @@ export const useTaskStore = create<TaskStoreState>((set) => ({
     set((state) => ({
       tasks: state.tasks.map((t) => (t.id === id ? task : t)),
     }));
+    await refreshPlanState();
   },
 
   removeTask: async (id) => {
     await getTaskRepository().remove(id);
     set((state) => ({ tasks: state.tasks.filter((t) => t.id !== id) }));
+    await refreshPlanState();
   },
 }));

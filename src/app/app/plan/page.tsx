@@ -45,6 +45,7 @@ export default function PlanPage() {
     fetchCurrentPlan,
     generateNewPlan,
     setApprovalStatus,
+    error,
   } = usePlanStore();
   const { viewMode, setViewMode } = usePlanViewStore();
 
@@ -90,6 +91,49 @@ export default function PlanPage() {
   const completedCount = tasks.filter(
     (task) => task.status === "completada",
   ).length;
+
+  const errorBanner = error
+    ? error.code === "ERR-DATA-001"
+      ? {
+          title: "Faltan tareas o bloques de disponibilidad",
+          description:
+            "Necesitás cargar al menos una tarea y un bloque de disponibilidad antes de generar un plan.",
+        }
+      : error.code === "ERR-SYS-001"
+        ? {
+            title: "Servicio de IA no disponible",
+            description:
+              "No se pudo consultar al motor de planificación. Tu estado local se mantiene intacto.",
+          }
+        : error.code === "ERR-PLAN-001"
+          ? {
+              title: "El plan no cumple las reglas de negocio",
+              description:
+                "Revisá el déficit de horas y los conflictos de sobrecarga antes de pedir una nueva versión.",
+            }
+          : {
+              title: "Error al generar el plan",
+              description: error.message,
+            }
+    : null;
+
+  const planWarning = currentPlan?.viabilidad
+    ? currentPlan.viabilidad === "no_viable"
+      ? {
+          title: "Plan no viable",
+          description:
+            currentPlan.validationCode === "ERR-IA-004"
+              ? "El motor detectó conflictos con disponibilidad, tareas fijas o límites de sesión."
+              : "La propuesta requiere revisión antes de aprobarse.",
+        }
+      : currentPlan.viabilidad === "viable_con_ajustes"
+        ? {
+            title: "Plan viable con ajustes",
+            description:
+              "La propuesta es útil, pero todavía contiene recomendaciones o conflictos menores.",
+          }
+        : null
+    : null;
 
   async function handleQuickAdd(title: string) {
     await createTask({
@@ -285,6 +329,25 @@ export default function PlanPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      {errorBanner && (
+        <Alert variant="destructive">
+          <AlertTriangle className="size-4" />
+          <AlertTitle>{errorBanner.title}</AlertTitle>
+          <AlertDescription>{errorBanner.description}</AlertDescription>
+        </Alert>
+      )}
+
+      {planWarning && currentPlan && (
+        <Alert>
+          <AlertTriangle className="size-4" />
+          <AlertTitle>{planWarning.title}</AlertTitle>
+          <AlertDescription>
+            {planWarning.description}
+            {currentPlan.validationCode ? ` Código: ${currentPlan.validationCode}.` : ""}
+          </AlertDescription>
+        </Alert>
+      )}
 
       <TaskFormDialog
         key={dialogSession}

@@ -36,8 +36,10 @@ export class MockPlanRepository implements PlanRepository {
   async updateApprovalStatus(
     id: string,
     status: PlanGenerado["approvalStatus"],
+    _userNote?: string,
   ): Promise<PlanGenerado> {
     await networkDelay();
+    void _userNote;
     const index = this.plans.findIndex((plan) => plan.id === id);
     if (index === -1) {
       throw new Error(`Plan no encontrado: ${id}`);

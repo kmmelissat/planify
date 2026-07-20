@@ -28,5 +28,23 @@ export interface PlanGenerationRequest {
  */
 export type PlanGenerationResult = Pick<
   PlanGenerado,
-  "scope" | "overallJustification" | "items" | "conflicts" | "promptUsed"
+  | "id"
+  | "version"
+  | "generatedAt"
+  | "approvalStatus"
+  | "scope"
+  | "overallJustification"
+  | "items"
+  | "conflicts"
+  | "promptUsed"
+  | "viabilidad"
+  | "validationCode"
+  | "estadoRevision"
+  | "responseStatus"
 >;
+
+export interface BackendPlanGenerationRequest {
+  scope: PlanScope;
+  user_note?: string;
+  change_block?: Record<string, unknown> | null;
+}

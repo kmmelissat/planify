@@ -50,6 +50,7 @@ export interface PlanRepository {
   updateApprovalStatus(
     id: string,
     status: PlanGenerado["approvalStatus"],
+    userNote?: string,
   ): Promise<PlanGenerado>;
 }
 

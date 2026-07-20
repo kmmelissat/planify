@@ -9,6 +9,7 @@ import {
   getAvailabilityRepository,
   getConstraintRepository,
 } from "@/lib/services";
+import { refreshPlanState } from "@/lib/services/refresh-plan";
 
 interface AvailabilityStoreState {
   blocks: AvailabilityBlock[];
@@ -53,6 +54,7 @@ export const useAvailabilityStore = create<AvailabilityStoreState>(
     createBlock: async (input) => {
       const block = await getAvailabilityRepository().createBlock(input);
       set((state) => ({ blocks: [...state.blocks, block] }));
+      await refreshPlanState();
     },
 
     updateBlock: async (id, update) => {
@@ -60,6 +62,7 @@ export const useAvailabilityStore = create<AvailabilityStoreState>(
       set((state) => ({
         blocks: state.blocks.map((b) => (b.id === id ? block : b)),
       }));
+      await refreshPlanState();
     },
 
     removeBlock: async (id) => {
@@ -67,11 +70,13 @@ export const useAvailabilityStore = create<AvailabilityStoreState>(
       set((state) => ({
         blocks: state.blocks.filter((block) => block.id !== id),
       }));
+      await refreshPlanState();
     },
 
     createConstraint: async (input) => {
       const constraint = await getConstraintRepository().create(input);
       set((state) => ({ constraints: [...state.constraints, constraint] }));
+      await refreshPlanState();
     },
 
     updateConstraint: async (id, update) => {
@@ -81,6 +86,7 @@ export const useAvailabilityStore = create<AvailabilityStoreState>(
           c.id === id ? constraint : c,
         ),
       }));
+      await refreshPlanState();
     },
 
     removeConstraint: async (id) => {
@@ -90,6 +96,7 @@ export const useAvailabilityStore = create<AvailabilityStoreState>(
           (constraint) => constraint.id !== id,
         ),
       }));
+      await refreshPlanState();
     },
   }),
 );

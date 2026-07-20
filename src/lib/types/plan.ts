@@ -53,6 +53,10 @@ export interface PlanGenerado {
   scope: PlanScope;
   generatedAt: string;
   approvalStatus: PlanApprovalStatus;
+  viabilidad?: "viable" | "viable_con_ajustes" | "no_viable";
+  validationCode?: string | null;
+  estadoRevision?: "normal" | "requiere_revision";
+  responseStatus?: "valid" | "invalid" | "error";
   /** Resumen en lenguaje natural de la estrategia usada para ordenar las tareas. */
   overallJustification: string;
   items: PlanItem[];

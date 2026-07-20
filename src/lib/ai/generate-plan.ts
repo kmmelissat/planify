@@ -1,4 +1,7 @@
 import type { PlanGenerationRequest, PlanGenerationResult } from "@/lib/ai/types";
+import { requestJson } from "@/lib/services/http/client";
+import { fromBackendPlanResponse } from "@/lib/services/http/mappers";
+import type { BackendPlanResponse } from "@/lib/services/http/types";
 
 /**
  * ⚠️ Punto de integración con IA generativa.
@@ -16,18 +19,25 @@ import type { PlanGenerationRequest, PlanGenerationResult } from "@/lib/ai/types
 export async function generatePlanProposal(
   request: PlanGenerationRequest,
 ): Promise<PlanGenerationResult> {
-  await simulatedDelay();
+  const response = await requestJson<BackendPlanResponse>("/ai/plans/generate", {
+    method: "POST",
+    body: JSON.stringify({
+      scope: request.scope,
+      user_note: request.userNote,
+      change_block: request.previousPlan ? { previousPlan: request.previousPlan.id } : undefined,
+    }),
+  });
 
+  const mapped = fromBackendPlanResponse(response);
   return {
-    scope: request.scope,
-    overallJustification:
-      "Justificación simulada: esta respuesta será provista por el backend cuando el motor de IA generativa esté conectado.",
-    items: [],
-    conflicts: [],
-    promptUsed: `[MOCK] Generar plan ${request.scope} a partir de ${request.tasks.length} tarea(s), ${request.availabilityBlocks.length} bloque(s) de disponibilidad y ${request.constraints.length} restricción(es).`,
+    scope: mapped.scope,
+    overallJustification: mapped.overallJustification,
+    items: mapped.items,
+    conflicts: mapped.conflicts,
+    promptUsed: mapped.promptUsed,
+    viabilidad: mapped.viabilidad,
+    validationCode: mapped.validationCode,
+    estadoRevision: mapped.estadoRevision,
+    responseStatus: mapped.responseStatus,
   };
-}
-
-function simulatedDelay(): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, 400));
 }

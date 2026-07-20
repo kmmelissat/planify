@@ -8,14 +8,15 @@ import {
   getTaskRepository,
 } from "@/lib/services";
 import { generatePlanProposal } from "@/lib/ai/generate-plan";
-import { generateId } from "@/lib/utils";
+import { ApiError, getApiErrorMessage } from "@/lib/services/api-error";
+import { refreshPlanState } from "@/lib/services/refresh-plan";
 
 interface PlanStoreState {
   currentPlan: PlanGenerado | null;
   plans: PlanGenerado[];
   history: HistorialEntry[];
   isGenerating: boolean;
-  error: string | null;
+  error: { code?: string; message: string } | null;
 
   fetchCurrentPlan: () => Promise<void>;
   fetchHistory: () => Promise<void>;
@@ -68,29 +69,22 @@ export const usePlanStore = create<PlanStoreState>((set, get) => ({
       });
 
       const plan: PlanGenerado = {
-        id: generateId("plan"),
-        version: (previousPlan?.version ?? 0) + 1,
-        generatedAt: new Date().toISOString(),
-        approvalStatus: "propuesto",
+        id: result.id,
+        version: result.version,
+        generatedAt: result.generatedAt,
+        approvalStatus: result.approvalStatus,
         ...result,
       };
 
-      await getPlanRepository().save(plan);
-      await getHistoryRepository().append({
-        id: generateId("hist"),
-        planId: plan.id,
-        version: plan.version,
-        scope: plan.scope,
-        action: previousPlan ? "replanificado" : "generado",
-        approvalStatus: plan.approvalStatus,
-        promptUsed: plan.promptUsed,
-        createdAt: plan.generatedAt,
-        userNote,
-      });
-
-      await Promise.all([get().fetchCurrentPlan(), get().fetchHistory()]);
+      set({ currentPlan: plan });
+      await refreshPlanState();
     } catch (error) {
-      set({ error: (error as Error).message });
+      set({
+        error: {
+          message: getApiErrorMessage(error),
+          code: error instanceof ApiError ? error.code : undefined,
+        },
+      });
     } finally {
       set({ isGenerating: false });
     }
@@ -103,28 +97,10 @@ export const usePlanStore = create<PlanStoreState>((set, get) => ({
     const updated = await getPlanRepository().updateApprovalStatus(
       current.id,
       status,
-    );
-
-    const actionByStatus: Record<PlanApprovalStatus, HistorialEntry["action"]> = {
-      propuesto: "generado",
-      aprobado: "aprobado",
-      editado: "editado",
-      rechazado: "rechazado",
-    };
-
-    await getHistoryRepository().append({
-      id: generateId("hist"),
-      planId: updated.id,
-      version: updated.version,
-      scope: updated.scope,
-      action: actionByStatus[status],
-      approvalStatus: status,
-      promptUsed: updated.promptUsed,
-      createdAt: new Date().toISOString(),
       userNote,
-    });
-
-    await Promise.all([get().fetchCurrentPlan(), get().fetchHistory()]);
+    );
+    set({ currentPlan: updated });
+    await refreshPlanState();
   },
 
   updatePlanItems: async (items) => {
@@ -136,19 +112,8 @@ export const usePlanStore = create<PlanStoreState>((set, get) => ({
       items,
       approvalStatus: "editado",
     };
-    await getPlanRepository().save(updated);
-    await getHistoryRepository().append({
-      id: generateId("hist"),
-      planId: updated.id,
-      version: updated.version,
-      scope: updated.scope,
-      action: "editado",
-      approvalStatus: "editado",
-      promptUsed: updated.promptUsed,
-      createdAt: new Date().toISOString(),
-      userNote: "Edición manual de bloques del plan.",
-    });
-
-    await Promise.all([get().fetchCurrentPlan(), get().fetchHistory()]);
+    const saved = await getPlanRepository().save(updated);
+    set({ currentPlan: saved });
+    await refreshPlanState();
   },
 }));
