@@ -6,6 +6,7 @@ import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { persistDemoSession } from "@/lib/auth/demo-session";
 
 interface FormErrors {
   name?: string;
@@ -42,6 +43,7 @@ export default function RegistroPage() {
     if (Object.keys(nextErrors).length > 0) return;
 
     setIsSubmitting(true);
+    persistDemoSession(name.trim() || "Usuario", email);
     router.push("/app");
   }
 

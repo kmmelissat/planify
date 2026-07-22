@@ -6,6 +6,7 @@ import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { persistDemoSession } from "@/lib/auth/demo-session";
 
 interface FormErrors {
   email?: string;
@@ -32,6 +33,7 @@ export default function LoginPage() {
     if (Object.keys(nextErrors).length > 0) return;
 
     setIsSubmitting(true);
+    persistDemoSession(email.split("@")[0] || "Usuario", email);
     router.push("/app");
   }
 

@@ -1,10 +1,13 @@
 "use client";
 
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/store/use-sidebar-store";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { clearDemoSession } from "@/lib/auth/demo-session";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -12,7 +15,13 @@ import {
 } from "@/components/ui/tooltip";
 
 export function Sidebar() {
+  const router = useRouter();
   const { isCollapsed, toggleCollapsed } = useSidebarStore();
+
+  function handleLogout() {
+    clearDemoSession();
+    router.push("/login");
+  }
 
   return (
     <aside
@@ -60,28 +69,40 @@ export function Sidebar() {
           isCollapsed && "flex justify-center",
         )}
       >
-        <Tooltip>
-          <TooltipTrigger
-            onClick={toggleCollapsed}
-            aria-label={isCollapsed ? "Expandir menú" : "Colapsar menú"}
-            className={cn(
-              "flex items-center gap-2 rounded-full px-3 py-2 text-sm text-muted-foreground outline-none transition-colors",
-              "hover:bg-sidebar-accent hover:text-foreground",
-              "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
-              isCollapsed && "px-2",
+        <div className="flex flex-col gap-2">
+          <Tooltip>
+            <TooltipTrigger
+              onClick={toggleCollapsed}
+              aria-label={isCollapsed ? "Expandir menú" : "Colapsar menú"}
+              className={cn(
+                "flex items-center gap-2 rounded-full px-3 py-2 text-sm text-muted-foreground outline-none transition-colors",
+                "hover:bg-sidebar-accent hover:text-foreground",
+                "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar",
+                isCollapsed && "px-2",
+              )}
+            >
+              {isCollapsed ? (
+                <PanelLeftOpen className="size-4" />
+              ) : (
+                <PanelLeftClose className="size-4" />
+              )}
+              {!isCollapsed && <span>Colapsar</span>}
+            </TooltipTrigger>
+            {isCollapsed && (
+              <TooltipContent side="right">Expandir menú</TooltipContent>
             )}
+          </Tooltip>
+
+          <Button
+            type="button"
+            variant="outline"
+            size={isCollapsed ? "icon" : "sm"}
+            onClick={handleLogout}
+            className={cn(isCollapsed ? "mx-auto" : "justify-start")}
           >
-            {isCollapsed ? (
-              <PanelLeftOpen className="size-4" />
-            ) : (
-              <PanelLeftClose className="size-4" />
-            )}
-            {!isCollapsed && <span>Colapsar</span>}
-          </TooltipTrigger>
-          {isCollapsed && (
-            <TooltipContent side="right">Expandir menú</TooltipContent>
-          )}
-        </Tooltip>
+            {isCollapsed ? "⇥" : "Cerrar sesión"}
+          </Button>
+        </div>
       </div>
     </aside>
   );

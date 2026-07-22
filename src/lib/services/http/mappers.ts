@@ -27,6 +27,7 @@ import type {
   BackendTaskStatus,
 } from "@/lib/services/http/types";
 import type { PlanGenerationRequest, PlanGenerationResult } from "@/lib/ai/types";
+import { addDays, startOfWeek } from "date-fns";
 
 const PRIORITY_TO_NUMBER: Record<Task["priority"], number> = {
   baja: 1,
@@ -72,6 +73,35 @@ const BACKEND_TO_FRONTEND_CONSTRAINT: Record<BackendConstraintCreate["type"], Co
   academic_priority: "otro",
 };
 
+const WEEKDAY_ORDER: AvailabilityBlock["day"][] = [
+  "lunes",
+  "martes",
+  "miercoles",
+  "jueves",
+  "viernes",
+  "sabado",
+  "domingo",
+];
+
+function weekdayToDate(day: AvailabilityBlock["day"], baseDate = new Date()): string {
+  const weekStart = startOfWeek(baseDate, { weekStartsOn: 1 });
+  const offset = WEEKDAY_ORDER.indexOf(day);
+  return addDays(weekStart, offset).toISOString().slice(0, 10);
+}
+
+function dateToWeekday(dateValue: string): AvailabilityBlock["day"] {
+  const days: AvailabilityBlock["day"][] = [
+    "domingo",
+    "lunes",
+    "martes",
+    "miercoles",
+    "jueves",
+    "viernes",
+    "sabado",
+  ];
+  return days[new Date(dateValue).getDay()] ?? "lunes";
+}
+
 export function toBackendTaskCreate(input: TaskInput): BackendTaskCreate {
   return {
     title: input.title,
@@ -115,6 +145,7 @@ export function fromBackendTask(task: BackendTaskOut): Task {
 
 export function toBackendAvailabilityCreate(input: AvailabilityBlockInput): BackendAvailabilityCreate {
   return {
+    date: weekdayToDate(input.day),
     day: input.day,
     start_time: input.startTime,
     end_time: input.endTime,
@@ -122,9 +153,19 @@ export function toBackendAvailabilityCreate(input: AvailabilityBlockInput): Back
   };
 }
 
+export function toBackendAvailabilityUpdate(update: Partial<AvailabilityBlockInput>): Record<string, unknown> {
+  return {
+    ...(update.day !== undefined ? { date: weekdayToDate(update.day), day: update.day } : {}),
+    ...(update.startTime !== undefined ? { start_time: update.startTime } : {}),
+    ...(update.endTime !== undefined ? { end_time: update.endTime } : {}),
+    ...(update.label !== undefined ? { label: update.label } : {}),
+  };
+}
+
 export function fromBackendAvailability(block: BackendAvailabilityOut): AvailabilityBlock {
   return {
     id: block.id,
+    date: block.date,
     day: block.day,
     startTime: block.start_time,
     endTime: block.end_time,
@@ -151,13 +192,18 @@ export function toBackendConstraintUpdate(update: Partial<ConstraintInput>): Par
 }
 
 export function fromBackendConstraint(constraint: BackendConstraintOut): Constraint {
-  const metadata = constraint.metadata ?? {};
+  const metadata = (constraint.metadata ?? constraint.meta_data ?? {}) as Record<string, unknown>;
   const type = BACKEND_TO_FRONTEND_CONSTRAINT[constraint.type];
+  const weekday =
+    (metadata.weekday as Constraint["day"] | undefined) ??
+    (metadata.day as Constraint["day"] | undefined) ??
+    (typeof metadata.date === "string" ? dateToWeekday(metadata.date) : undefined);
   return {
     id: constraint.id,
     type,
     description: constraint.description,
-    day: (metadata.day as Constraint["day"]) ?? undefined,
+    day: weekday,
+    taskId: (metadata.task_id as string | undefined) ?? undefined,
     startTime: (metadata.start_time as string | undefined) ?? (metadata.bloque_inicio as string | undefined),
     endTime: (metadata.end_time as string | undefined) ?? (metadata.bloque_fin as string | undefined),
     maxSessionMinutes: (metadata.max_session_minutes as number | undefined) ?? undefined,
@@ -251,7 +297,8 @@ function conflictToFrontend(conflict: BackendConflictOut): ConflictAlert {
 
 function constraintMetadataToBackend(input: Partial<ConstraintInput>): Record<string, unknown> {
   const metadata: Record<string, unknown> = {};
-  if (input.day !== undefined) metadata.day = input.day;
+  if (input.day !== undefined) metadata.weekday = input.day;
+  if (input.taskId !== undefined) metadata.task_id = input.taskId;
   if (input.startTime !== undefined) metadata.start_time = input.startTime;
   if (input.endTime !== undefined) metadata.end_time = input.endTime;
   if (input.maxSessionMinutes !== undefined) metadata.max_session_minutes = input.maxSessionMinutes;

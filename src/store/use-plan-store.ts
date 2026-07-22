@@ -68,15 +68,7 @@ export const usePlanStore = create<PlanStoreState>((set, get) => ({
         userNote,
       });
 
-      const plan: PlanGenerado = {
-        id: result.id,
-        version: result.version,
-        generatedAt: result.generatedAt,
-        approvalStatus: result.approvalStatus,
-        ...result,
-      };
-
-      set({ currentPlan: plan });
+      set({ currentPlan: result as PlanGenerado });
       await refreshPlanState();
     } catch (error) {
       set({

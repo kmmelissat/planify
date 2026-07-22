@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -22,10 +22,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { dayLabels, weekdayOrder } from "@/lib/constants/weekday";
+import { useTaskStore } from "@/store/use-task-store";
 import type {
   Constraint,
   ConstraintInput,
   ConstraintType,
+  Task,
   Weekday,
 } from "@/lib/types";
 
@@ -54,6 +56,7 @@ function needsMaxSession(type: ConstraintType): boolean {
 interface FormValues {
   type: ConstraintType;
   description: string;
+  taskId: string;
   day: Weekday;
   startTime: string;
   endTime: string;
@@ -63,6 +66,7 @@ interface FormValues {
 const emptyValues: FormValues = {
   type: "horario_ocupado",
   description: "",
+  taskId: "",
   day: "lunes",
   startTime: "",
   endTime: "",
@@ -73,6 +77,7 @@ function toFormValues(constraint: Constraint): FormValues {
   return {
     type: constraint.type,
     description: constraint.description,
+    taskId: constraint.taskId ?? "",
     day: constraint.day ?? "lunes",
     startTime: constraint.startTime ?? "",
     endTime: constraint.endTime ?? "",
@@ -84,13 +89,21 @@ function toFormValues(constraint: Constraint): FormValues {
 }
 
 type FormErrors = Partial<
-  Record<"description" | "startTime" | "endTime" | "maxSessionMinutes", string>
+  Record<
+    "description" | "taskId" | "startTime" | "endTime" | "maxSessionMinutes",
+    string
+  >
 >;
 
 function validate(values: FormValues): FormErrors {
   const errors: FormErrors = {};
-  if (!values.description.trim())
+  if (!values.description.trim()) {
     errors.description = "La descripción es obligatoria.";
+  }
+
+  if (values.type === "tarea_fija" && !values.taskId) {
+    errors.taskId = "Seleccioná una tarea.";
+  }
 
   if (needsSchedule(values.type)) {
     if (!values.startTime) errors.startTime = "La hora de inicio es obligatoria.";
@@ -126,11 +139,18 @@ export function ConstraintFormDialog({
   onSubmit: (input: ConstraintInput) => Promise<void>;
 }) {
   const isEditing = Boolean(constraint);
+  const { tasks, fetchTasks } = useTaskStore();
   const [values, setValues] = useState<FormValues>(() =>
     constraint ? toFormValues(constraint) : emptyValues,
   );
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (open && tasks.length === 0) {
+      void fetchTasks();
+    }
+  }, [open, tasks.length, fetchTasks]);
 
   function setField<K extends keyof FormValues>(key: K, value: FormValues[K]) {
     setValues((prev) => ({ ...prev, [key]: value }));
@@ -147,6 +167,7 @@ export function ConstraintFormDialog({
       const input: ConstraintInput = {
         type: values.type,
         description: values.description.trim(),
+        taskId: values.type === "tarea_fija" ? values.taskId : undefined,
         day: needsSchedule(values.type) ? values.day : undefined,
         startTime: needsSchedule(values.type) ? values.startTime : undefined,
         endTime: needsSchedule(values.type) ? values.endTime : undefined,
@@ -155,7 +176,9 @@ export function ConstraintFormDialog({
           : undefined,
       };
       await onSubmit(input);
-      toast.success(isEditing ? "Restricción actualizada." : "Restricción creada.");
+      toast.success(
+        isEditing ? "Restricción actualizada." : "Restricción creada.",
+      );
       onOpenChange(false);
     } catch {
       toast.error("No se pudo guardar la restricción. Intentá de nuevo.");
@@ -197,6 +220,30 @@ export function ConstraintFormDialog({
               </SelectContent>
             </Select>
           </div>
+
+          {values.type === "tarea_fija" && (
+            <div className="flex flex-col gap-1.5">
+              <Label>Tarea</Label>
+              <Select
+                value={values.taskId}
+                onValueChange={(value) => setField("taskId", value ?? "")}
+              >
+                <SelectTrigger className="w-full" aria-invalid={Boolean(errors.taskId)}>
+                  <SelectValue placeholder="Seleccioná una tarea" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tasks.map((task: Task) => (
+                    <SelectItem key={task.id} value={task.id}>
+                      {task.title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.taskId && (
+                <p className="text-xs text-destructive">{errors.taskId}</p>
+              )}
+            </div>
+          )}
 
           <div className="flex flex-col gap-1.5">
             <Label htmlFor="constraint-description">Descripción</Label>

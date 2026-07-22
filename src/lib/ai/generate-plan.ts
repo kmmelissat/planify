@@ -37,16 +37,5 @@ export async function generatePlanProposal(
     }),
   });
 
-  const mapped = fromBackendPlanResponse(response);
-  return {
-    scope: mapped.scope,
-    overallJustification: mapped.overallJustification,
-    items: mapped.items,
-    conflicts: mapped.conflicts,
-    promptUsed: mapped.promptUsed,
-    viabilidad: mapped.viabilidad,
-    validationCode: mapped.validationCode,
-    estadoRevision: mapped.estadoRevision,
-    responseStatus: mapped.responseStatus,
-  };
+  return fromBackendPlanResponse(response);
 }

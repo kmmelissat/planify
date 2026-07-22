@@ -10,6 +10,7 @@ export type Weekday =
 /** Bloque de tiempo libre declarado por el usuario para un día de la semana. */
 export interface AvailabilityBlock {
   id: string;
+  date?: string;
   day: Weekday;
   startTime: string; // "HH:mm"
   endTime: string; // "HH:mm"
@@ -31,6 +32,7 @@ export interface Constraint {
   type: ConstraintType;
   description: string;
   day?: Weekday;
+  taskId?: string;
   startTime?: string; // "HH:mm", aplica a horario_ocupado / tarea_fija
   endTime?: string; // "HH:mm"
   maxSessionMinutes?: number; // aplica a tiempo_maximo_sesion

@@ -33,6 +33,7 @@ export interface BackendTaskCreate {
 export interface BackendAvailabilityOut {
   id: string;
   user_id: string;
+  date: string;
   day: Weekday;
   start_time: string;
   end_time: string;
@@ -40,6 +41,7 @@ export interface BackendAvailabilityOut {
 }
 
 export interface BackendAvailabilityCreate {
+  date: string;
   day: Weekday;
   start_time: string;
   end_time: string;
@@ -57,6 +59,7 @@ export interface BackendConstraintOut {
   user_id: string;
   type: BackendConstraintType;
   description: string;
+  meta_data?: Record<string, unknown> | null;
   metadata?: Record<string, unknown> | null;
 }
 
