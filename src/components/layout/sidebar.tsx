@@ -6,7 +6,7 @@ import { PanelLeftClose, PanelLeftOpen } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useSidebarStore } from "@/store/use-sidebar-store";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
-import { clearDemoSession } from "@/lib/auth/demo-session";
+import { clearSession } from "@/lib/auth/session";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -19,7 +19,7 @@ export function Sidebar() {
   const { isCollapsed, toggleCollapsed } = useSidebarStore();
 
   function handleLogout() {
-    clearDemoSession();
+    clearSession();
     router.push("/login");
   }
 

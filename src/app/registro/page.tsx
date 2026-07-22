@@ -6,13 +6,16 @@ import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { persistDemoSession } from "@/lib/auth/demo-session";
+import { persistSession } from "@/lib/auth/session";
+import { registerUser } from "@/lib/services/http/auth-repository";
+import { ApiError } from "@/lib/services/api-error";
 
 interface FormErrors {
   name?: string;
   email?: string;
   password?: string;
   confirmPassword?: string;
+  general?: string;
 }
 
 function isValidEmail(value: string): boolean {
@@ -28,7 +31,7 @@ export default function RegistroPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const nextErrors: FormErrors = {};
     if (!name.trim()) nextErrors.name = "El nombre es obligatorio.";
@@ -43,8 +46,18 @@ export default function RegistroPage() {
     if (Object.keys(nextErrors).length > 0) return;
 
     setIsSubmitting(true);
-    persistDemoSession(name.trim() || "Usuario", email);
-    router.push("/app");
+    try {
+      const response = await registerUser(name.trim(), email, password);
+      persistSession(response.access_token, response.user);
+      router.push("/app");
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 409) {
+        setErrors({ email: "Ya existe una cuenta con este correo." });
+      } else {
+        setErrors({ general: "No se pudo crear la cuenta. Intentá de nuevo." });
+      }
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -114,6 +127,10 @@ export default function RegistroPage() {
             </p>
           )}
         </div>
+
+        {errors.general && (
+          <p className="text-sm text-destructive">{errors.general}</p>
+        )}
 
         <Button type="submit" disabled={isSubmitting} className="mt-2">
           Crear cuenta

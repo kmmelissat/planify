@@ -34,7 +34,6 @@ export interface BackendAvailabilityOut {
   id: string;
   user_id: string;
   date: string;
-  day: Weekday;
   start_time: string;
   end_time: string;
   label?: string | null;
@@ -71,7 +70,7 @@ export interface BackendConstraintCreate {
 
 export interface BackendPlanItemOut {
   tarea_id: string;
-  dia: Weekday;
+  dia: string;
   bloque_inicio: string;
   bloque_fin: string;
   orden: number;

@@ -1,8 +1,8 @@
-import { MockAvailabilityRepository } from "@/lib/services/mock/mock-availability-repository";
-import { MockConstraintRepository } from "@/lib/services/mock/mock-constraint-repository";
-import { MockHistoryRepository } from "@/lib/services/mock/mock-history-repository";
-import { MockPlanRepository } from "@/lib/services/mock/mock-plan-repository";
-import { MockTaskRepository } from "@/lib/services/mock/mock-task-repository";
+import { HttpAvailabilityRepository } from "@/lib/services/http/availability-repository";
+import { HttpConstraintRepository } from "@/lib/services/http/constraint-repository";
+import { HttpHistoryRepository } from "@/lib/services/http/history-repository";
+import { HttpPlanRepository } from "@/lib/services/http/plan-repository";
+import { HttpTaskRepository } from "@/lib/services/http/task-repository";
 
 export type {
   AvailabilityRepository,
@@ -13,16 +13,15 @@ export type {
 } from "@/lib/services/interfaces";
 
 /**
- * Punto central de composición de la capa de datos. La interfaz está conectada
- * a repositorios en memoria para que la demo funcione íntegramente sin backend.
- * Si más adelante se conecta una API real, este archivo es el único lugar que
- * debería cambiar para intercambiar las implementaciones.
+ * Único punto de composición de la capa de datos. Hoy instancia los
+ * repositorios HTTP contra la API real; los mocks en `src/lib/services/mock`
+ * quedan disponibles solo para demos sin backend.
  */
-const taskRepository = new MockTaskRepository();
-const availabilityRepository = new MockAvailabilityRepository();
-const constraintRepository = new MockConstraintRepository();
-const planRepository = new MockPlanRepository();
-const historyRepository = new MockHistoryRepository();
+const taskRepository = new HttpTaskRepository();
+const availabilityRepository = new HttpAvailabilityRepository();
+const constraintRepository = new HttpConstraintRepository();
+const planRepository = new HttpPlanRepository();
+const historyRepository = new HttpHistoryRepository();
 
 export function getTaskRepository() {
   return taskRepository;

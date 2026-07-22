@@ -59,6 +59,14 @@ const BACKEND_TO_FRONTEND_STATUS: Record<BackendTaskStatus, TaskStatus> = {
   rescheduled: "reprogramada",
 };
 
+const BACKEND_TASK_STATUS_TO_PLAN_ITEM_STATUS: Record<string, PlanItem["status"]> = {
+  pending: "programada",
+  in_progress: "en_progreso",
+  completed: "completada",
+  overdue: "en_riesgo",
+  rescheduled: "programada",
+};
+
 const CONSTRAINT_TO_BACKEND_TYPE: Record<Constraint["type"], BackendConstraintCreate["type"]> = {
   horario_ocupado: "blocked_time",
   tarea_fija: "fixed_task",
@@ -99,7 +107,8 @@ function dateToWeekday(dateValue: string): AvailabilityBlock["day"] {
     "viernes",
     "sabado",
   ];
-  return days[new Date(dateValue).getDay()] ?? "lunes";
+  const [year, month, day] = dateValue.slice(0, 10).split("-").map(Number);
+  return days[new Date(year, month - 1, day).getDay()] ?? "lunes";
 }
 
 export function toBackendTaskCreate(input: TaskInput): BackendTaskCreate {
@@ -166,7 +175,7 @@ export function fromBackendAvailability(block: BackendAvailabilityOut): Availabi
   return {
     id: block.id,
     date: block.date,
-    day: block.day,
+    day: dateToWeekday(block.date),
     startTime: block.start_time,
     endTime: block.end_time,
     label: block.label ?? undefined,
@@ -274,10 +283,10 @@ export function fromBackendPlanResponse(
       taskId: item.tarea_id,
       taskTitle: item.task_title ?? item.tarea_id,
       priority: NUMBER_TO_PRIORITY(item.priority ?? 1),
-      day: item.dia,
-      startTime: item.bloque_inicio,
-      endTime: item.bloque_fin,
-      status: (item.status as PlanItem["status"]) ?? "programada",
+      day: dateToWeekday(item.dia),
+      startTime: item.bloque_inicio.slice(0, 5),
+      endTime: item.bloque_fin.slice(0, 5),
+      status: (item.status ? BACKEND_TASK_STATUS_TO_PLAN_ITEM_STATUS[item.status] : undefined) ?? "programada",
       justification: response.justificacion,
     })),
     conflicts: response.conflictos.map((conflict) => conflictToFrontend(conflict)),

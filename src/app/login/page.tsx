@@ -6,11 +6,14 @@ import { AuthCard } from "@/components/auth/auth-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { persistDemoSession } from "@/lib/auth/demo-session";
+import { persistSession } from "@/lib/auth/session";
+import { loginUser } from "@/lib/services/http/auth-repository";
+import { ApiError } from "@/lib/services/api-error";
 
 interface FormErrors {
   email?: string;
   password?: string;
+  general?: string;
 }
 
 function isValidEmail(value: string): boolean {
@@ -24,7 +27,7 @@ export default function LoginPage() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  function handleSubmit(event: FormEvent) {
+  async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     const nextErrors: FormErrors = {};
     if (!isValidEmail(email)) nextErrors.email = "Ingresá un email válido.";
@@ -33,8 +36,18 @@ export default function LoginPage() {
     if (Object.keys(nextErrors).length > 0) return;
 
     setIsSubmitting(true);
-    persistDemoSession(email.split("@")[0] || "Usuario", email);
-    router.push("/app");
+    try {
+      const response = await loginUser(email, password);
+      persistSession(response.access_token, response.user);
+      router.push("/app");
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        setErrors({ general: "Correo o contraseña incorrectos." });
+      } else {
+        setErrors({ general: "No se pudo iniciar sesión. Intentá de nuevo." });
+      }
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -73,6 +86,10 @@ export default function LoginPage() {
             <p className="text-xs text-destructive">{errors.password}</p>
           )}
         </div>
+
+        {errors.general && (
+          <p className="text-sm text-destructive">{errors.general}</p>
+        )}
 
         <Button type="submit" disabled={isSubmitting} className="mt-2">
           Iniciar sesión
