@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { Pencil } from "lucide-react";
 import type { PlanItem } from "@/lib/types";
 import { PriorityBadge, priorityAccentClass } from "@/components/tasks/badges";
 import { dayLabels } from "@/lib/constants/weekday";
 import { cn } from "@/lib/utils";
-import { usePlanStore } from "@/store/use-plan-store";
 import { Button } from "@/components/ui/button";
 import { EditPlanItemDialog } from "@/components/plan/edit-plan-item-dialog";
+import { usePlanItemEditor } from "@/components/plan/use-plan-item-editor";
 import {
   Table,
   TableBody,
@@ -26,26 +25,11 @@ const priorityWeight: Record<PlanItem["priority"], number> = {
 };
 
 export function TableView({ items }: { items: PlanItem[] }) {
-  const { updatePlanItems } = usePlanStore();
-  const [editingItem, setEditingItem] = useState<PlanItem | null>(null);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const editor = usePlanItemEditor(items);
 
   const sorted = [...items].sort(
     (a, b) => priorityWeight[b.priority] - priorityWeight[a.priority],
   );
-
-  function openEditDialog(item: PlanItem) {
-    setEditingItem(item);
-    setIsDialogOpen(true);
-  }
-
-  async function handleSaveBlock(startTime: string, endTime: string) {
-    if (!editingItem) return;
-    const updatedItems = items.map((item) =>
-      item.id === editingItem.id ? { ...item, startTime, endTime } : item,
-    );
-    await updatePlanItems(updatedItems);
-  }
 
   return (
     <>
@@ -90,7 +74,7 @@ export function TableView({ items }: { items: PlanItem[] }) {
                   size="sm"
                   variant="ghost"
                   className="gap-1.5 text-muted-foreground"
-                  onClick={() => openEditDialog(item)}
+                  onClick={() => editor.openEditDialog(item)}
                 >
                   <Pencil className="size-3.5" /> Editar bloque
                 </Button>
@@ -101,11 +85,11 @@ export function TableView({ items }: { items: PlanItem[] }) {
       </Table>
 
       <EditPlanItemDialog
-        key={editingItem?.id}
-        item={editingItem}
-        open={isDialogOpen}
-        onOpenChange={setIsDialogOpen}
-        onSubmit={handleSaveBlock}
+        key={editor.editingItem?.id}
+        item={editor.editingItem}
+        open={editor.isDialogOpen}
+        onOpenChange={editor.setIsDialogOpen}
+        onSubmit={editor.handleSaveBlock}
       />
     </>
   );

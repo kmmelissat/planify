@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { PageHeader } from "@/components/layout/page-header";
+import { HistoryDetailDialog } from "@/components/history/history-detail-dialog";
 
 const actionLabels: Record<string, string> = {
   generado: "Generado",
@@ -47,13 +48,14 @@ export default function HistorialPage() {
                 <TableHead>Acción</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Prompt usado</TableHead>
+                <TableHead>Respuesta IA</TableHead>
                 <TableHead className="pr-6">Nota</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {history.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={6} className="py-10 text-center text-muted-foreground">
+                  <TableCell colSpan={7} className="py-10 text-center text-muted-foreground">
                     Todavía no hay eventos registrados.
                   </TableCell>
                 </TableRow>
@@ -74,8 +76,16 @@ export default function HistorialPage() {
                   <TableCell className="capitalize text-muted-foreground">
                     {entry.approvalStatus}
                   </TableCell>
+                  <TableCell className="max-w-xs">
+                    <div className="flex flex-col gap-1 items-start">
+                      <p className="max-w-xs truncate text-xs text-muted-foreground">
+                        {entry.promptUsed}
+                      </p>
+                      <HistoryDetailDialog entry={entry} />
+                    </div>
+                  </TableCell>
                   <TableCell className="max-w-xs truncate text-xs text-muted-foreground">
-                    {entry.promptUsed}
+                    {entry.aiResponse ?? "—"}
                   </TableCell>
                   <TableCell className="max-w-xs truncate pr-6 text-xs text-muted-foreground">
                     {entry.userNote ?? "—"}

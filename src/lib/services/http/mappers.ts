@@ -251,6 +251,7 @@ export function fromBackendHistory(entry: BackendHistoryEntryOut): HistorialEntr
     action: entry.action as HistorialEntry["action"],
     approvalStatus: entry.approval_status as HistorialEntry["approvalStatus"],
     promptUsed: entry.prompt_used,
+    aiResponse: entry.respuesta_ia ?? undefined,
     createdAt: entry.created_at ?? new Date().toISOString(),
     userNote: entry.user_note ?? undefined,
   };

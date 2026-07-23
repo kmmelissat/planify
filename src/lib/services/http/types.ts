@@ -125,6 +125,7 @@ export interface BackendHistoryEntryOut {
   action: string;
   approval_status: string;
   prompt_used: string;
+  respuesta_ia?: string | null;
   created_at: string | null;
   user_note?: string | null;
 }

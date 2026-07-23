@@ -13,8 +13,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { dayLabels } from "@/lib/constants/weekday";
-import type { PlanItem } from "@/lib/types";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { dayLabels, weekdayOrder } from "@/lib/constants/weekday";
+import type { PlanItem, Weekday } from "@/lib/types";
 
 export function EditPlanItemDialog({
   item,
@@ -25,8 +32,9 @@ export function EditPlanItemDialog({
   item: PlanItem | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (startTime: string, endTime: string) => Promise<void>;
+  onSubmit: (day: Weekday, startTime: string, endTime: string) => Promise<void>;
 }) {
+  const [day, setDay] = useState<Weekday>(item?.day ?? "lunes");
   const [startTime, setStartTime] = useState(item?.startTime ?? "");
   const [endTime, setEndTime] = useState(item?.endTime ?? "");
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +54,7 @@ export function EditPlanItemDialog({
     setError(null);
     setIsSubmitting(true);
     try {
-      await onSubmit(startTime, endTime);
+      await onSubmit(day, startTime, endTime);
       toast.success("Bloque actualizado.");
       onOpenChange(false);
     } catch {
@@ -63,11 +71,25 @@ export function EditPlanItemDialog({
           <DialogHeader>
             <DialogTitle>Editar bloque</DialogTitle>
             <DialogDescription>
-              {item
-                ? `${item.taskTitle} · ${dayLabels[item.day]}`
-                : "Ajustá el horario de este bloque."}
+              {item ? item.taskTitle : "Ajustá el día y el horario de este bloque."}
             </DialogDescription>
           </DialogHeader>
+
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="plan-item-day">Día</Label>
+            <Select value={day} onValueChange={(value) => setDay(value as Weekday)}>
+              <SelectTrigger id="plan-item-day" className="w-full">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {weekdayOrder.map((weekday) => (
+                  <SelectItem key={weekday} value={weekday}>
+                    {dayLabels[weekday]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">

@@ -37,16 +37,34 @@ export const usePlanStore = create<PlanStoreState>((set, get) => ({
   error: null,
 
   fetchCurrentPlan: async () => {
-    const [currentPlan, plans] = await Promise.all([
-      getPlanRepository().getLatest(),
-      getPlanRepository().list(),
-    ]);
-    set({ currentPlan, plans });
+    try {
+      const [currentPlan, plans] = await Promise.all([
+        getPlanRepository().getLatest(),
+        getPlanRepository().list(),
+      ]);
+      set({ currentPlan, plans, error: null });
+    } catch (error) {
+      set({
+        error: {
+          message: getApiErrorMessage(error),
+          code: error instanceof ApiError ? error.code : undefined,
+        },
+      });
+    }
   },
 
   fetchHistory: async () => {
-    const history = await getHistoryRepository().list();
-    set({ history });
+    try {
+      const history = await getHistoryRepository().list();
+      set({ history, error: null });
+    } catch (error) {
+      set({
+        error: {
+          message: getApiErrorMessage(error),
+          code: error instanceof ApiError ? error.code : undefined,
+        },
+      });
+    }
   },
 
   generateNewPlan: async (userNote) => {

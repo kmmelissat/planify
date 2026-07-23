@@ -1,5 +1,6 @@
 import type { PlanGenerado } from "@/lib/types";
 import type { PlanRepository } from "@/lib/services/interfaces";
+import { ApiError } from "@/lib/services/api-error";
 import { requestJson } from "@/lib/services/http/client";
 import { fromBackendPlanResponse, toBackendApprovalUpdate, toBackendPlanUpdate } from "@/lib/services/http/mappers";
 import type { BackendPlanResponse } from "@/lib/services/http/types";
@@ -14,8 +15,11 @@ export class HttpPlanRepository implements PlanRepository {
     try {
       const plan = await requestJson<BackendPlanResponse>(`/plans/${id}`);
       return fromBackendPlanResponse(plan);
-    } catch {
-      return null;
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) {
+        return null;
+      }
+      throw error;
     }
   }
 
@@ -23,8 +27,11 @@ export class HttpPlanRepository implements PlanRepository {
     try {
       const plan = await requestJson<BackendPlanResponse>("/plans/latest");
       return fromBackendPlanResponse(plan);
-    } catch {
-      return null;
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 404) {
+        return null;
+      }
+      throw error;
     }
   }
 

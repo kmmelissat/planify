@@ -1,5 +1,10 @@
+"use client";
+
+import { Pencil } from "lucide-react";
 import type { PlanItem, Weekday } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { EditPlanItemDialog } from "@/components/plan/edit-plan-item-dialog";
+import { usePlanItemEditor } from "@/components/plan/use-plan-item-editor";
 
 const weekOrder: { day: Weekday; label: string }[] = [
   { day: "lunes", label: "Lunes" },
@@ -86,6 +91,7 @@ function layoutDay(items: PlanItem[]): PositionedItem[] {
 }
 
 export function CalendarView({ items }: { items: PlanItem[] }) {
+  const editor = usePlanItemEditor(items);
   const { startHour, endHour } = computeRange(items);
   const hours = Array.from(
     { length: endHour - startHour },
@@ -148,7 +154,7 @@ export function CalendarView({ items }: { items: PlanItem[] }) {
                       key={item.id}
                       title={`${item.taskTitle} · ${item.startTime}–${item.endTime}\n${item.justification}`}
                       className={cn(
-                        "absolute overflow-hidden rounded-md border-l-2 px-1.5 py-1",
+                        "group absolute overflow-hidden rounded-md border-l-2 px-1.5 py-1",
                         priorityBlockClass[item.priority],
                       )}
                       style={{
@@ -158,7 +164,15 @@ export function CalendarView({ items }: { items: PlanItem[] }) {
                         width: `calc(${width}% - 4px)`,
                       }}
                     >
-                      <p className="truncate text-xs leading-tight font-medium text-foreground">
+                      <button
+                        type="button"
+                        aria-label={`Editar bloque de ${item.taskTitle}`}
+                        onClick={() => editor.openEditDialog(item)}
+                        className="absolute top-0.5 right-0.5 rounded p-0.5 text-foreground/50 opacity-0 transition-opacity hover:bg-background/70 hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100"
+                      >
+                        <Pencil className="size-3" />
+                      </button>
+                      <p className="truncate pr-3.5 text-xs leading-tight font-medium text-foreground">
                         {item.taskTitle}
                       </p>
                       <p className="truncate text-[0.65rem] leading-tight text-muted-foreground">
@@ -178,6 +192,14 @@ export function CalendarView({ items }: { items: PlanItem[] }) {
           );
         })}
       </div>
+
+      <EditPlanItemDialog
+        key={editor.editingItem?.id}
+        item={editor.editingItem}
+        open={editor.isDialogOpen}
+        onOpenChange={editor.setIsDialogOpen}
+        onSubmit={editor.handleSaveBlock}
+      />
     </div>
   );
 }

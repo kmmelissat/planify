@@ -19,6 +19,8 @@ export interface HistorialEntry {
   action: HistoryAction;
   approvalStatus: PlanApprovalStatus;
   promptUsed: string;
+  /** Respuesta cruda del modelo de IA asociada a este evento (RF-09/RF-10). */
+  aiResponse?: string;
   createdAt: string;
   /** Motivo declarado por el usuario, si aplica (ej. al rechazar o pedir nueva versión). */
   userNote?: string;
