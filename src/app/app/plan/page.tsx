@@ -104,6 +104,24 @@ export default function PlanPage() {
     }
   }
 
+  async function handleReject() {
+    try {
+      await setApprovalStatus("rechazado");
+      toast.success("Plan rechazado. Pedí una nueva versión cuando quieras.");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error));
+    }
+  }
+
+  async function handleApprove() {
+    try {
+      await setApprovalStatus("aprobado");
+      toast.success("Plan aprobado.");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error));
+    }
+  }
+
   const completedCount = tasks.filter(
     (task) => task.status === "completada",
   ).length;
@@ -291,19 +309,33 @@ export default function PlanPage() {
                       size="sm"
                       variant="outline"
                       className="gap-1.5"
-                      onClick={() => setApprovalStatus("rechazado")}
+                      disabled={currentPlan.approvalStatus === "rechazado"}
+                      onClick={handleReject}
                     >
                       <X className="size-4" /> Rechazar
                     </Button>
                     <Button
                       size="sm"
                       className="gap-1.5"
-                      onClick={() => setApprovalStatus("aprobado")}
+                      disabled={currentPlan.approvalStatus === "rechazado"}
+                      onClick={handleApprove}
                     >
                       <Check className="size-4" /> Aprobar
                     </Button>
                   </div>
                 </CardHeader>
+                {currentPlan.approvalStatus === "rechazado" && (
+                  <CardContent className="px-6">
+                    <Alert variant="destructive">
+                      <X className="size-4" />
+                      <AlertTitle>Este plan fue rechazado</AlertTitle>
+                      <AlertDescription>
+                        Ya no está vigente. Usá &quot;Pedir nueva versión&quot;
+                        arriba para que el agente proponga otra.
+                      </AlertDescription>
+                    </Alert>
+                  </CardContent>
+                )}
                 {currentPlan.conflicts.length > 0 && (
                   <CardContent className="flex flex-col gap-2.5 px-6">
                     {currentPlan.conflicts.map((conflict) => (

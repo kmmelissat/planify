@@ -95,8 +95,8 @@ export function BulkAddTasksDialog({
               Título | Categoría | Fecha límite | Prioridad | Esfuerzo (min) | Estado
             </span>
             . Solo el título es obligatorio — podés dejar el resto vacío. También
-            podés pegar una tabla directo, sea el markdown crudo (con "|") o una
-            tabla ya renderizada copiada tal cual (Excel, Sheets, una página).
+            podés pegar una tabla directo, sea el markdown crudo (con &quot;|&quot;)
+            o una tabla ya renderizada copiada tal cual (Excel, Sheets, una página).
           </DialogDescription>
         </DialogHeader>
 

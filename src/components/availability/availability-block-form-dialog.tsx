@@ -21,17 +21,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { dayLabels, weekdayOrder } from "@/lib/constants/weekday";
+import { WeekdayMultiSelect } from "@/components/availability/weekday-multi-select";
 import type { AvailabilityBlock, AvailabilityBlockInput, Weekday } from "@/lib/types";
 
 interface FormValues {
-  day: Weekday;
+  days: Weekday[];
   startTime: string;
   endTime: string;
   label: string;
 }
 
 const emptyValues: FormValues = {
-  day: "lunes",
+  days: ["lunes"],
   startTime: "",
   endTime: "",
   label: "",
@@ -39,17 +40,18 @@ const emptyValues: FormValues = {
 
 function toFormValues(block: AvailabilityBlock): FormValues {
   return {
-    day: block.day,
+    days: [block.day],
     startTime: block.startTime,
     endTime: block.endTime,
     label: block.label ?? "",
   };
 }
 
-type FormErrors = Partial<Record<"startTime" | "endTime", string>>;
+type FormErrors = Partial<Record<"days" | "startTime" | "endTime", string>>;
 
 function validate(values: FormValues): FormErrors {
   const errors: FormErrors = {};
+  if (values.days.length === 0) errors.days = "Elegí al menos un día.";
   if (!values.startTime) errors.startTime = "La hora de inicio es obligatoria.";
   if (!values.endTime) errors.endTime = "La hora de fin es obligatoria.";
   if (values.startTime && values.endTime && values.endTime <= values.startTime) {
@@ -88,13 +90,21 @@ export function AvailabilityBlockFormDialog({
 
     setIsSubmitting(true);
     try {
-      await onSubmit({
-        day: values.day,
-        startTime: values.startTime,
-        endTime: values.endTime,
-        label: values.label.trim() || undefined,
-      });
-      toast.success(isEditing ? "Bloque actualizado." : "Bloque creado.");
+      for (const day of values.days) {
+        await onSubmit({
+          day,
+          startTime: values.startTime,
+          endTime: values.endTime,
+          label: values.label.trim() || undefined,
+        });
+      }
+      toast.success(
+        isEditing
+          ? "Bloque actualizado."
+          : values.days.length > 1
+            ? `${values.days.length} bloques creados.`
+            : "Bloque creado.",
+      );
       onOpenChange(false);
     } catch {
       toast.error("No se pudo guardar el bloque. Intentá de nuevo.");
@@ -120,21 +130,36 @@ export function AvailabilityBlockFormDialog({
 
           <div className="flex flex-col gap-1.5">
             <Label>Día</Label>
-            <Select
-              value={values.day}
-              onValueChange={(value) => setField("day", value as Weekday)}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {weekdayOrder.map((day) => (
-                  <SelectItem key={day} value={day}>
-                    {dayLabels[day]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {isEditing ? (
+              <Select
+                value={values.days[0]}
+                onValueChange={(value) => setField("days", [value as Weekday])}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {weekdayOrder.map((day) => (
+                    <SelectItem key={day} value={day}>
+                      {dayLabels[day]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            ) : (
+              <>
+                <WeekdayMultiSelect
+                  value={values.days}
+                  onChange={(days) => setField("days", days)}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Elegí varios días para crear el mismo bloque en cada uno.
+                </p>
+                {errors.days && (
+                  <p className="text-xs text-destructive">{errors.days}</p>
+                )}
+              </>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">

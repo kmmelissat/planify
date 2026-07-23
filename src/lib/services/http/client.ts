@@ -3,7 +3,10 @@ import { ApiError } from "@/lib/services/api-error";
 const DEFAULT_API_BASE_URL = "http://localhost:8000";
 
 export function getApiBaseUrl(): string {
-  return process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL;
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? DEFAULT_API_BASE_URL;
+  // Evita "//" al concatenar con paths que ya empiezan con "/", sin importar
+  // si la env var se configuró con o sin slash final.
+  return base.replace(/\/+$/, "");
 }
 
 export function getAuthHeaders(): Record<string, string> {

@@ -2,10 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "motion/react";
+import { Loader2, UserPlus, Mail, Lock, User } from "lucide-react";
 import { AuthCard } from "@/components/auth/auth-card";
+import { AuthField, AuthPasswordField } from "@/components/auth/auth-field";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { persistSession } from "@/lib/auth/session";
 import { registerUser } from "@/lib/services/http/auth-repository";
 import { ApiError } from "@/lib/services/api-error";
@@ -69,70 +70,67 @@ export default function RegistroPage() {
       footerLinkHref="/login"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="register-name">Nombre</Label>
-          <Input
-            id="register-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            aria-invalid={Boolean(errors.name)}
-          />
-          {errors.name && (
-            <p className="text-xs text-destructive">{errors.name}</p>
+        <AuthField
+          id="register-name"
+          label="Nombre"
+          icon={<User className="size-3.5" />}
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          error={errors.name}
+          autoComplete="name"
+        />
+
+        <AuthField
+          id="register-email"
+          label="Email"
+          type="email"
+          icon={<Mail className="size-3.5" />}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          error={errors.email}
+          autoComplete="email"
+        />
+
+        <AuthPasswordField
+          id="register-password"
+          label="Contraseña"
+          icon={<Lock className="size-3.5" />}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={errors.password}
+          autoComplete="new-password"
+        />
+
+        <AuthPasswordField
+          id="register-confirm-password"
+          label="Confirmar contraseña"
+          icon={<Lock className="size-3.5" />}
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          error={errors.confirmPassword}
+          autoComplete="new-password"
+        />
+
+        <AnimatePresence>
+          {errors.general && (
+            <motion.p
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              {errors.general}
+            </motion.p>
           )}
-        </div>
+        </AnimatePresence>
 
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="register-email">Email</Label>
-          <Input
-            id="register-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            aria-invalid={Boolean(errors.email)}
-          />
-          {errors.email && (
-            <p className="text-xs text-destructive">{errors.email}</p>
+        <Button type="submit" disabled={isSubmitting} className="mt-2 gap-1.5">
+          {isSubmitting ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <UserPlus className="size-4" />
           )}
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="register-password">Contraseña</Label>
-          <Input
-            id="register-password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            aria-invalid={Boolean(errors.password)}
-          />
-          {errors.password && (
-            <p className="text-xs text-destructive">{errors.password}</p>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="register-confirm-password">
-            Confirmar contraseña
-          </Label>
-          <Input
-            id="register-confirm-password"
-            type="password"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            aria-invalid={Boolean(errors.confirmPassword)}
-          />
-          {errors.confirmPassword && (
-            <p className="text-xs text-destructive">
-              {errors.confirmPassword}
-            </p>
-          )}
-        </div>
-
-        {errors.general && (
-          <p className="text-sm text-destructive">{errors.general}</p>
-        )}
-
-        <Button type="submit" disabled={isSubmitting} className="mt-2">
           Crear cuenta
         </Button>
       </form>
