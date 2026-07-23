@@ -224,12 +224,12 @@ export function toBackendPlanUpdate(items: PlanItem[]): BackendPlanUpdateRequest
   return {
     plan: items.map((item, index) => ({
       tarea_id: item.taskId,
-      dia: item.day,
+      dia: weekdayToDate(item.day), // Pydantic espera `date` (YYYY-MM-DD), no el nombre del día
       bloque_inicio: item.startTime,
       bloque_fin: item.endTime,
       orden: index + 1,
       task_title: item.taskTitle,
-      priority: item.priority ? PRIORITY_TO_NUMBER[item.priority] : undefined,
+      priority: PRIORITY_TO_NUMBER[item.priority],
       status: item.status,
     })),
   };
