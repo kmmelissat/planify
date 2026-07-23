@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type KeyboardEvent } from "react";
-import { MoreHorizontal, Pencil } from "lucide-react";
+import { MoreHorizontal, Pencil, Trash2 } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -45,10 +45,12 @@ export function EditableTaskRow({
   task,
   onUpdate,
   onEdit,
+  onDelete,
 }: {
   task: Task;
   onUpdate: (id: string, update: TaskUpdate) => void;
   onEdit: (task: Task) => void;
+  onDelete: (task: Task) => void;
 }) {
   const isCompleted = task.status === "completada";
 
@@ -242,6 +244,10 @@ export function EditableTaskRow({
             <DropdownMenuItem onClick={() => onEdit(task)}>
               <Pencil />
               Editar
+            </DropdownMenuItem>
+            <DropdownMenuItem variant="destructive" onClick={() => onDelete(task)}>
+              <Trash2 />
+              Eliminar
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

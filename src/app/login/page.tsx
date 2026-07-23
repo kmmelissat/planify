@@ -2,10 +2,11 @@
 
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { motion, AnimatePresence } from "motion/react";
+import { Loader2, LogIn, Mail, Lock } from "lucide-react";
 import { AuthCard } from "@/components/auth/auth-card";
+import { AuthField, AuthPasswordField } from "@/components/auth/auth-field";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { persistSession } from "@/lib/auth/session";
 import { loginUser } from "@/lib/services/http/auth-repository";
 import { ApiError } from "@/lib/services/api-error";
@@ -59,39 +60,47 @@ export default function LoginPage() {
       footerLinkHref="/registro"
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="login-email">Email</Label>
-          <Input
-            id="login-email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            aria-invalid={Boolean(errors.email)}
-          />
-          {errors.email && (
-            <p className="text-xs text-destructive">{errors.email}</p>
+        <AuthField
+          id="login-email"
+          label="Email"
+          type="email"
+          icon={<Mail className="size-3.5" />}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          error={errors.email}
+          autoComplete="email"
+        />
+
+        <AuthPasswordField
+          id="login-password"
+          label="Contraseña"
+          icon={<Lock className="size-3.5" />}
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          error={errors.password}
+          autoComplete="current-password"
+        />
+
+        <AnimatePresence>
+          {errors.general && (
+            <motion.p
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.15 }}
+              className="rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive"
+            >
+              {errors.general}
+            </motion.p>
           )}
-        </div>
+        </AnimatePresence>
 
-        <div className="flex flex-col gap-1.5">
-          <Label htmlFor="login-password">Contraseña</Label>
-          <Input
-            id="login-password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            aria-invalid={Boolean(errors.password)}
-          />
-          {errors.password && (
-            <p className="text-xs text-destructive">{errors.password}</p>
+        <Button type="submit" disabled={isSubmitting} className="mt-2 gap-1.5">
+          {isSubmitting ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <LogIn className="size-4" />
           )}
-        </div>
-
-        {errors.general && (
-          <p className="text-sm text-destructive">{errors.general}</p>
-        )}
-
-        <Button type="submit" disabled={isSubmitting} className="mt-2">
           Iniciar sesión
         </Button>
       </form>

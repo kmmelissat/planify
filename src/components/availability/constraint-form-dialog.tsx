@@ -22,6 +22,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { dayLabels, weekdayOrder } from "@/lib/constants/weekday";
+import { WeekdayMultiSelect } from "@/components/availability/weekday-multi-select";
 import { useTaskStore } from "@/store/use-task-store";
 import type {
   Constraint,
@@ -57,7 +58,7 @@ interface FormValues {
   type: ConstraintType;
   description: string;
   taskId: string;
-  day: Weekday;
+  days: Weekday[];
   startTime: string;
   endTime: string;
   maxSessionMinutes: string;
@@ -67,7 +68,7 @@ const emptyValues: FormValues = {
   type: "horario_ocupado",
   description: "",
   taskId: "",
-  day: "lunes",
+  days: ["lunes"],
   startTime: "",
   endTime: "",
   maxSessionMinutes: "",
@@ -78,7 +79,7 @@ function toFormValues(constraint: Constraint): FormValues {
     type: constraint.type,
     description: constraint.description,
     taskId: constraint.taskId ?? "",
-    day: constraint.day ?? "lunes",
+    days: [constraint.day ?? "lunes"],
     startTime: constraint.startTime ?? "",
     endTime: constraint.endTime ?? "",
     maxSessionMinutes:
@@ -90,7 +91,7 @@ function toFormValues(constraint: Constraint): FormValues {
 
 type FormErrors = Partial<
   Record<
-    "description" | "taskId" | "startTime" | "endTime" | "maxSessionMinutes",
+    "description" | "taskId" | "days" | "startTime" | "endTime" | "maxSessionMinutes",
     string
   >
 >;
@@ -106,6 +107,7 @@ function validate(values: FormValues): FormErrors {
   }
 
   if (needsSchedule(values.type)) {
+    if (values.days.length === 0) errors.days = "Elegí al menos un día.";
     if (!values.startTime) errors.startTime = "La hora de inicio es obligatoria.";
     if (!values.endTime) errors.endTime = "La hora de fin es obligatoria.";
     if (
@@ -164,20 +166,30 @@ export function ConstraintFormDialog({
 
     setIsSubmitting(true);
     try {
-      const input: ConstraintInput = {
-        type: values.type,
-        description: values.description.trim(),
-        taskId: values.type === "tarea_fija" ? values.taskId : undefined,
-        day: needsSchedule(values.type) ? values.day : undefined,
-        startTime: needsSchedule(values.type) ? values.startTime : undefined,
-        endTime: needsSchedule(values.type) ? values.endTime : undefined,
-        maxSessionMinutes: needsMaxSession(values.type)
-          ? Number(values.maxSessionMinutes)
-          : undefined,
-      };
-      await onSubmit(input);
+      const scheduled = needsSchedule(values.type);
+      const days = scheduled ? values.days : [undefined];
+
+      for (const day of days) {
+        const input: ConstraintInput = {
+          type: values.type,
+          description: values.description.trim(),
+          taskId: values.type === "tarea_fija" ? values.taskId : undefined,
+          day,
+          startTime: scheduled ? values.startTime : undefined,
+          endTime: scheduled ? values.endTime : undefined,
+          maxSessionMinutes: needsMaxSession(values.type)
+            ? Number(values.maxSessionMinutes)
+            : undefined,
+        };
+        await onSubmit(input);
+      }
+
       toast.success(
-        isEditing ? "Restricción actualizada." : "Restricción creada.",
+        isEditing
+          ? "Restricción actualizada."
+          : days.length > 1
+            ? `${days.length} restricciones creadas.`
+            : "Restricción creada.",
       );
       onOpenChange(false);
     } catch {
@@ -262,21 +274,41 @@ export function ConstraintFormDialog({
             <>
               <div className="flex flex-col gap-1.5">
                 <Label>Día</Label>
-                <Select
-                  value={values.day}
-                  onValueChange={(value) => setField("day", value as Weekday)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {weekdayOrder.map((day) => (
-                      <SelectItem key={day} value={day}>
-                        {dayLabels[day]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {isEditing ? (
+                  <Select
+                    value={values.days[0]}
+                    onValueChange={(value) =>
+                      setField("days", [value as Weekday])
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {weekdayOrder.map((day) => (
+                        <SelectItem key={day} value={day}>
+                          {dayLabels[day]}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <>
+                    <WeekdayMultiSelect
+                      value={values.days}
+                      onChange={(days) => setField("days", days)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      Elegí varios días para repetir esta restricción en cada
+                      uno.
+                    </p>
+                    {errors.days && (
+                      <p className="text-xs text-destructive">
+                        {errors.days}
+                      </p>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="grid grid-cols-2 gap-3">

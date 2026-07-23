@@ -11,10 +11,8 @@ import type {
 } from "@/lib/types";
 
 /**
- * Todos los métodos son async y devuelven Promise a propósito: el mock hoy
- * resuelve en memoria, pero la firma ya coincide con lo que devolvería un
- * cliente fetch/axios contra la API real. Cambiar de implementación no debe
- * requerir tocar ningún componente de UI.
+ * Todos los métodos son async y devuelven Promise: la firma coincide con lo
+ * que devuelve el cliente fetch contra la API real (src/lib/services/http).
  */
 
 export interface TaskRepository {
