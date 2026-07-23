@@ -12,11 +12,7 @@ export type {
   TaskRepository,
 } from "@/lib/services/interfaces";
 
-/**
- * Único punto de composición de la capa de datos. Hoy instancia los
- * repositorios HTTP contra la API real; los mocks en `src/lib/services/mock`
- * quedan disponibles solo para demos sin backend.
- */
+/** Único punto de composición de la capa de datos: instancia los repositorios HTTP contra la API real. */
 const taskRepository = new HttpTaskRepository();
 const availabilityRepository = new HttpAvailabilityRepository();
 const constraintRepository = new HttpConstraintRepository();

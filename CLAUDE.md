@@ -76,10 +76,18 @@ Cada entrada de historial debe mostrar, como mínimo:
  
 ## Fuera de este checklist (no es responsabilidad del frontend)
  
-- Integración real con el proveedor de IA generativa (API/SDK) — hoy mockeada en
-  `src/lib/ai/generate-plan.ts`, la conecta el equipo de backend.
-- Persistencia real en base de datos — hoy mockeada en `src/lib/services/mock/*`, la
-  reemplaza backend vía `src/lib/services/index.ts`.
+- Integración real con el proveedor de IA generativa (API/SDK) — la implementa el equipo
+  de backend. El frontend ya está conectado: `src/lib/ai/generate-plan.ts` llama a
+  `POST /ai/plans/generate` sobre la API real vía `requestJson` (`src/lib/services/http/client.ts`).
+- Persistencia real en base de datos — el frontend ya consume la API real vía los
+  repositorios HTTP en `src/lib/services/http/*`, compuestos en `src/lib/services/index.ts`.
+  (Los repositorios mock que existían en `src/lib/services/mock/*` se eliminaron por no
+  estar conectados a nada; si hace falta demostrar un escenario sin backend levantado,
+  usar datos mock locales en el componente, no repositorios completos.)
+- La URL base de la API se resuelve con `NEXT_PUBLIC_API_BASE_URL`, con default
+  `http://localhost:8000` (ver `src/lib/services/http/client.ts`). El cliente además
+  adjunta el token de sesión de Supabase (`sb-*-auth-token` en `localStorage`) como
+  header `Authorization: Bearer`.
 - Manejo de credenciales/API keys — no deben existir en el código del frontend bajo
   ninguna circunstancia (RNF-02), pero la integración en sí es de backend.
 - Documentación entregable (documento técnico, funcional, manual de usuario, catálogo de
