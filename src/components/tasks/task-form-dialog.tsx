@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/services/api-error";
 import {
   Dialog,
   DialogContent,
@@ -68,6 +69,12 @@ function toFormValues(task: Task): FormValues {
 
 type FormErrors = Partial<Record<keyof FormValues, string>>;
 
+function todayDateString(): string {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+
 function validate(values: FormValues): FormErrors {
   const errors: FormErrors = {};
   if (!values.title.trim()) errors.title = "El título es obligatorio.";
@@ -82,6 +89,10 @@ function validate(values: FormValues): FormErrors {
   ) {
     errors.estimatedEffortMinutes =
       "Ingresá un esfuerzo estimado válido, en minutos.";
+  }
+
+  if (values.dueDate && values.dueDate < todayDateString()) {
+    errors.dueDate = "La fecha límite no puede ser anterior a hoy.";
   }
 
   return errors;
@@ -131,8 +142,8 @@ export function TaskFormDialog({
       await onSubmit(input);
       toast.success(isEditing ? "Tarea actualizada." : "Tarea creada.");
       onOpenChange(false);
-    } catch {
-      toast.error("No se pudo guardar la tarea. Intentá de nuevo.");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error));
     } finally {
       setIsSubmitting(false);
     }
@@ -235,7 +246,11 @@ export function TaskFormDialog({
                 type="date"
                 value={values.dueDate}
                 onChange={(e) => setField("dueDate", e.target.value)}
+                aria-invalid={Boolean(errors.dueDate)}
               />
+              {errors.dueDate && (
+                <p className="text-xs text-destructive">{errors.dueDate}</p>
+              )}
             </div>
 
             <div className="flex flex-col gap-1.5">

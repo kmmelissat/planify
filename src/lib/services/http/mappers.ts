@@ -289,14 +289,32 @@ export function fromBackendPlanResponse(
       status: (item.status ? BACKEND_TASK_STATUS_TO_PLAN_ITEM_STATUS[item.status] : undefined) ?? "programada",
       justification: response.justificacion,
     })),
-    conflicts: response.conflictos.map((conflict) => conflictToFrontend(conflict)),
+    conflicts: dedupeConflicts(response.conflictos).map((conflict, index) =>
+      conflictToFrontend(conflict, index),
+    ),
     promptUsed: response.prompt_enviado,
   };
 }
 
-function conflictToFrontend(conflict: BackendConflictOut): ConflictAlert {
+/**
+ * El motor de IA a veces emite el mismo conflicto más de una vez (ej. dos
+ * pasadas de detección que se solapan en fechas). Se deduplica por
+ * tipo + tarea + mensaje antes de mostrarlo, ya que dos conflictos con
+ * exactamente el mismo mensaje no aportan información nueva al usuario.
+ */
+function dedupeConflicts(conflicts: BackendConflictOut[]): BackendConflictOut[] {
+  const seen = new Set<string>();
+  return conflicts.filter((conflict) => {
+    const key = `${conflict.tipo}|${conflict.tarea_id ?? ""}|${conflict.mensaje}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function conflictToFrontend(conflict: BackendConflictOut, index: number): ConflictAlert {
   return {
-    id: `${conflict.tarea_id ?? conflict.tipo}-${conflict.severidad}`,
+    id: `${conflict.tarea_id ?? conflict.tipo}-${conflict.severidad}-${index}`,
     type: conflict.tipo as ConflictAlert["type"],
     severity: conflict.severidad,
     message: conflict.mensaje,

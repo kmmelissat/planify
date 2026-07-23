@@ -20,13 +20,29 @@ export class ApiError extends Error {
   static fromResponse(status: number, payload: unknown): ApiError {
     if (payload && typeof payload === "object" && "detail" in payload) {
       const detail = (payload as { detail?: unknown }).detail;
-      if (detail && typeof detail === "object") {
-        const typed = detail as ApiErrorDetail;
-        return new ApiError(status, typed.message ?? "Error de API", typed.code, typed);
-      }
 
       if (typeof detail === "string") {
         return new ApiError(status, detail);
+      }
+
+      // FastAPI/pydantic devuelve los errores 422 como un array de
+      // { type, loc, msg, input, ctx }, no como un objeto { code, message }.
+      if (Array.isArray(detail)) {
+        const message = detail
+          .map((item) =>
+            item && typeof item === "object" && "msg" in item
+              ? String((item as { msg: unknown }).msg)
+              : null,
+          )
+          .filter((msg): msg is string => Boolean(msg))
+          .join(" ");
+
+        return new ApiError(status, message || "Error de API", undefined, detail);
+      }
+
+      if (detail && typeof detail === "object") {
+        const typed = detail as ApiErrorDetail;
+        return new ApiError(status, typed.message ?? "Error de API", typed.code, typed);
       }
     }
 

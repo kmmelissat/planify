@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Check, Plus, RefreshCw, X } from "lucide-react";
+import { toast } from "sonner";
+import { AlertTriangle, Check, ListPlus, Plus, RefreshCw, X } from "lucide-react";
 import { useTaskStore } from "@/store/use-task-store";
+import { getApiErrorMessage } from "@/lib/services/api-error";
 import { usePlanStore } from "@/store/use-plan-store";
 import { usePlanViewStore } from "@/store/use-plan-view-store";
 import { Button } from "@/components/ui/button";
@@ -14,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -29,6 +32,7 @@ import { KanbanView } from "@/components/plan/kanban-view";
 import { TableView } from "@/components/plan/table-view";
 import { PageHeader } from "@/components/layout/page-header";
 import { TaskFormDialog } from "@/components/tasks/task-form-dialog";
+import { BulkAddTasksDialog } from "@/components/tasks/bulk-add-tasks-dialog";
 import { QuickAddTaskInput } from "@/components/tasks/quick-add-task-input";
 import { EditableTaskRow } from "@/components/tasks/editable-task-row";
 import {
@@ -38,7 +42,7 @@ import {
 import type { Task, TaskInput } from "@/lib/types";
 
 export default function PlanPage() {
-  const { tasks, fetchTasks, createTask, updateTask } = useTaskStore();
+  const { tasks, fetchTasks, createTask, updateTask, removeTask } = useTaskStore();
   const {
     currentPlan,
     isGenerating,
@@ -54,6 +58,8 @@ export default function PlanPage() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [dialogTask, setDialogTask] = useState<Task | null>(null);
   const [dialogSession, setDialogSession] = useState(0);
+  const [isBulkDialogOpen, setIsBulkDialogOpen] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<Task | null>(null);
 
   useEffect(() => {
     fetchTasks();
@@ -85,6 +91,16 @@ export default function PlanPage() {
       await updateTask(dialogTask.id, input);
     } else {
       await createTask(input);
+    }
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    try {
+      await removeTask(deleteTarget.id);
+      toast.success("Tarea eliminada.");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error));
     }
   }
 
@@ -178,9 +194,18 @@ export default function PlanPage() {
               value={statusFilter}
               onValueChange={setStatusFilter}
             />
-            <Button onClick={openCreateDialog} className="gap-1.5">
-              <Plus className="size-4" /> Nueva tarea
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setIsBulkDialogOpen(true)}
+                className="gap-1.5"
+              >
+                <ListPlus className="size-4" /> Importar lista
+              </Button>
+              <Button onClick={openCreateDialog} className="gap-1.5">
+                <Plus className="size-4" /> Nueva tarea
+              </Button>
+            </div>
           </div>
 
           <Card className="py-0">
@@ -214,6 +239,7 @@ export default function PlanPage() {
                       task={task}
                       onUpdate={updateTask}
                       onEdit={openEditDialog}
+                      onDelete={setDeleteTarget}
                     />
                   ))}
                 </TableBody>
@@ -355,6 +381,27 @@ export default function PlanPage() {
         onOpenChange={setIsDialogOpen}
         task={dialogTask}
         onSubmit={handleDialogSubmit}
+      />
+
+      <BulkAddTasksDialog
+        open={isBulkDialogOpen}
+        onOpenChange={setIsBulkDialogOpen}
+        onCreateTask={createTask}
+      />
+
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+        title="¿Eliminar esta tarea?"
+        description={
+          deleteTarget
+            ? `Se eliminará "${deleteTarget.title}". Esta acción no se puede deshacer.`
+            : ""
+        }
+        confirmLabel="Eliminar"
+        onConfirm={handleConfirmDelete}
       />
     </div>
   );
